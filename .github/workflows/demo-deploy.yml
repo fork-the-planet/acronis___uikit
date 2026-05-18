@@ -59,7 +59,7 @@ jobs:
         run: VITE_BASE_PATH=/shadcn-uikit/ pnpm --filter ./apps/demo run build
 
       - name: Build storybook
-        run: pnpm --filter ./packages/ui run storybook:build
+        run: STORYBOOK_DISABLE_ADDON_VITEST=true pnpm --filter ./packages/ui run storybook:build
 
       - name: Copy storybook to demo dist
         run: |
