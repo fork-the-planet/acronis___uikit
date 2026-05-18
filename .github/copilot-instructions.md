@@ -20,7 +20,7 @@ These rules are the source of truth for AI-assisted changes. Follow them strictl
   - Lint everything: `pnpm run lint` or `pnpm run lint:fix`.
   - Type check: `pnpm run type-check`.
   - Test UI package: `pnpm --filter ./packages/ui run test` (Vitest + React Testing Library).
-  - Demo dev: `pnpm --filter ./packages/demo run dev` (Vite + React).
+  - Demo dev: `pnpm --filter ./apps/demo run dev` (Vite + React).
   - Storybook: `pnpm --filter ./packages/ui run storybook` (component documentation and testing).
 
 - Coding conventions (React + shadcn/ui)
@@ -42,7 +42,7 @@ These rules are the source of truth for AI-assisted changes. Follow them strictl
     - Component documentation is in Storybook stories (`__stories__/` directories).
     - Create comprehensive stories showing all variants, sizes, and states.
     - Use Storybook's MDX format for additional documentation when needed.
-    - Demo application in `packages/demo/` showcases real-world usage.
+    - Demo application in `apps/demo/` showcases real-world usage.
     - See `.github/instructions/docs.instructions.md` for documentation guidelines if available.
 
   - Linting and styling
@@ -111,14 +111,14 @@ These rules are the source of truth for AI-assisted changes. Follow them strictl
 #### Demo Application Development
 - Start demo application (Vite + React):
   ```bash
-  pnpm --filter ./packages/demo run dev
+  pnpm --filter ./apps/demo run dev
   ```
   Access at: `http://localhost:3000`
 
 - Build demo:
   ```bash
-  pnpm --filter ./packages/demo run build
-  pnpm --filter ./packages/demo run preview
+  pnpm --filter ./apps/demo run build
+  pnpm --filter ./apps/demo run preview
   ```
 
 #### Component Development
@@ -175,8 +175,8 @@ Note: Husky pre-commit hooks automatically run lint-staged and type checking.
 - **React Components**: Additional components in `packages/ui/src/components/react/`
 - **Icons**: Auto-generated icons in `packages/ui/src/components/icons/`
 - **Styles**: Theme files in `packages/ui/src/styles/`
-- **Demo**: Demo application in `packages/demo/src/`
-- **Documentation**: Markdown docs in `packages/docs/`
+- **Demo**: Demo application in `apps/demo/src/`
+- **Documentation**: Markdown docs in `apps/docs/`
 
 Workflow:
 1. Implement features in components
@@ -197,7 +197,7 @@ After making changes, validate with these scenarios:
    - Check accessibility panel for issues
 
 2. **Demo Application Validation**:
-   - Run `pnpm --filter ./packages/demo run dev`
+   - Run `pnpm --filter ./apps/demo run dev`
    - Access `http://localhost:3000`
    - Test components in real-world scenarios
    - Verify theme switching works
@@ -223,6 +223,7 @@ packages/
 │   ├── src/hooks/                - React hooks
 │   ├── __tests__/                - Unit tests
 │   └── __stories__/              - Storybook stories
+apps/
 ├── demo/                         - Demo application (@acronis-platform/shadcn-uikit-demo)
 │   ├── src/app/                  - Demo pages and examples
 │   ├── src/components/           - Demo-specific components
@@ -238,7 +239,7 @@ packages/
 - `packages/ui/vite.config.ts` - UI library build configuration
 - `packages/ui/package.json` - Main component library package
 - `packages/ui/tailwind.config.ts` - Tailwind CSS configuration
-- `packages/demo/vite.config.ts` - Demo app configuration
+- `apps/demo/vite.config.ts` - Demo app configuration
 
 ### CI/CD Workflows
 - **ci.yml** - Main CI: build, lint, test
@@ -294,9 +295,9 @@ pnpm install --frozen-lockfile
 ### Making Changes
 - **Components**: Edit files in `packages/ui/src/components/ui/`
 - **Styles**: Edit theme files in `packages/ui/src/styles/themes/`
-- **Documentation**: Edit markdown files in `packages/docs/`
+- **Documentation**: Edit markdown files in `apps/docs/`
 - **Icons**: Auto-generated in `packages/ui/src/components/icons/`
-- **Demo**: Add examples in `packages/demo/src/app/`
+- **Demo**: Add examples in `apps/demo/src/app/`
 
 ### Testing Changes
 - Unit tests: `pnpm --filter ./packages/ui run test`
@@ -333,8 +334,8 @@ pnpm install --frozen-lockfile
 - `pnpm --filter ./packages/ui run type-check` - TypeScript checks
 
 ### Demo Package Scripts
-- `pnpm --filter ./packages/demo run dev` - Dev server (http://localhost:3000)
-- `pnpm --filter ./packages/demo run build` - Build demo
-- `pnpm --filter ./packages/demo run preview` - Preview built demo
-- `pnpm --filter ./packages/demo run lint` - Lint demo package
-- `pnpm --filter ./packages/demo run type-check` - TypeScript checks
+- `pnpm --filter ./apps/demo run dev` - Dev server (http://localhost:3000)
+- `pnpm --filter ./apps/demo run build` - Build demo
+- `pnpm --filter ./apps/demo run preview` - Preview built demo
+- `pnpm --filter ./apps/demo run lint` - Lint demo package
+- `pnpm --filter ./apps/demo run type-check` - TypeScript checks
