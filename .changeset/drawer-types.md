@@ -1,5 +1,5 @@
 ---
-"@acronis-platform/shadcn-uikit": patch
+'@acronis-platform/shadcn-uikit': patch
 ---
 
 Fix: `dist/components/ui/drawer.d.ts` now ships with the published
