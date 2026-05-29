@@ -48,37 +48,22 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      #      - name: Build Acronis shacn UI Component Library
-      #        run: pnpm --filter ./packages/legacy/ui run build
-
-      #      - name: Build icons
-      #        run: pnpm --filter ./packages/icons run build
-
       - name: Lint
         run: pnpm -r lint
 
-      # Typecheck is scoped to the published library for now — apps still
-      # have pre-existing source-level type errors (TanStack Form types in
-      # apps/demos, base-ui RadioGroup onValueChange, a missing sonner
-      # declaration in apps/docs) that aren't fixed by the catalog. Widen
-      # this to \`pnpm -r typecheck\` once those are sorted.
-      - name: Typecheck UI library
-        run: pnpm --filter @acronis-platform/shadcn-uikit typecheck
+      # Build the UI library first so apps/demos and apps/docs can resolve
+      # its dist exports during typecheck.
+      - name: Build UI library
+        run: pnpm --filter @acronis-platform/shadcn-uikit build
 
-      # Build runs last so the topological build order (ui → demo / docs)
-      # is exercised against the same lockfile we just installed from.
-      - name: Build
-        run: pnpm -r build
+      # Generate the fumadocs .source files needed by apps/docs typecheck.
+      - name: Generate fumadocs source
+        run: pnpm --filter @acronis-platform/shadcn-uikit-docs exec fumadocs-mdx
 
-      # Typecheck is scoped to the published library for now — apps still
-      # have pre-existing source-level type errors. Widen this to
-      # `pnpm -r typecheck` after the script vocabulary unification and
-      # apps/demos typecheck-fix sibling PRs land.
-      - name: Typecheck UI library
-        run: pnpm --filter @acronis-platform/shadcn-uikit run type-check
+      - name: Typecheck
+        run: pnpm -r typecheck
 
-      # Build runs before Test so the topological build order (ui → demo / docs)
-      # is exercised against the same lockfile we just installed from.
+      # Full build to verify the topological build order (ui → demo / docs).
       - name: Build
         run: pnpm -r build
 

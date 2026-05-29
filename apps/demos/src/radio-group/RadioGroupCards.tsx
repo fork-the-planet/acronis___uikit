@@ -9,7 +9,7 @@ export function RadioGroupCards() {
   const [value, setValue] = React.useState('card');
 
   return (
-    <RadioGroup value={value} onValueChange={setValue}>
+    <RadioGroup value={value} onValueChange={(val) => setValue(val as string)}>
       <div className="grid gap-4 md:grid-cols-3">
         <div
           className={`cursor-pointer rounded-lg border-2 p-4 transition-colors ${

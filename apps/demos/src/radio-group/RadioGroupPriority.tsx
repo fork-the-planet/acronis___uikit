@@ -10,7 +10,7 @@ export function RadioGroupPriority() {
 
   return (
     <div className="space-y-4">
-      <RadioGroup value={value} onValueChange={setValue}>
+      <RadioGroup value={value} onValueChange={(val) => setValue(val as string)}>
         <div className="flex items-start space-x-2">
           <RadioGroupItem value="low" id="priority-low" className="mt-1" />
           <div className="grid gap-1.5 leading-none">

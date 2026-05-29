@@ -13,7 +13,7 @@ type DateRange = { from: Date | undefined; to?: Date | undefined };
 
 import { CalendarIcon } from '@acronis-platform/shadcn-uikit';
 export function DatePickerRange() {
-  const [dateRange, setDateRange] = React.useState<DateRange | undefined>({
+  const [dateRange, setDateRange] = React.useState<DateRange>({
     from: undefined,
     to: undefined,
   });
@@ -50,7 +50,7 @@ export function DatePickerRange() {
           mode="range"
           selected={dateRange}
           onSelect={(range) =>
-            setDateRange(range || { from: undefined, to: undefined })
+            setDateRange(range ?? { from: undefined, to: undefined })
           }
           numberOfMonths={2}
         />

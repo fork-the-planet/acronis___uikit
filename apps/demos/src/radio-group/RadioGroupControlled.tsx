@@ -10,7 +10,7 @@ export function RadioGroupControlled() {
 
   return (
     <div className="space-y-4">
-      <RadioGroup value={value} onValueChange={setValue}>
+      <RadioGroup value={value} onValueChange={(val) => setValue(val as string)}>
         <div className="flex items-center space-x-2">
           <RadioGroupItem value="option-one" id="r1-option-one" />
           <Label htmlFor="r1-option-one">Option One</Label>
