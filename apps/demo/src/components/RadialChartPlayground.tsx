@@ -154,6 +154,22 @@ export function RadialChartPlayground() {
   const renderStartAngle = clockWise ? endAngle : startAngle;
   const renderEndAngle = clockWise ? startAngle : endAngle;
 
+  const escapeUnsafeJsString = (str: string) =>
+    str.replace(/[<>\u2028\u2029]/g, (ch) => {
+      switch (ch) {
+        case '<':
+          return '\\u003C';
+        case '>':
+          return '\\u003E';
+        case '\u2028':
+          return '\\u2028';
+        case '\u2029':
+          return '\\u2029';
+        default:
+          return ch;
+      }
+    });
+
   const config = React.useMemo(() => {
     const cfg: Record<string, { label: string; color: string }> = {};
     selectedValueKeys.forEach((key, idx) => {
@@ -171,8 +187,9 @@ export function RadialChartPlayground() {
       .filter(([, v]) => v !== false)
       .map(([k]) => k);
     if (enabled.length !== currentSource.data.length) {
+      const serializedEnabled = escapeUnsafeJsString(JSON.stringify(enabled));
       lines.unshift(
-        `const filteredData = data.filter((d) => ${JSON.stringify(enabled)}.includes(String(d["${nameKey}"])))`
+        `const filteredData = data.filter((d) => ${serializedEnabled}.includes(String(d["${nameKey}"])))`
       );
       lines.push(`    data={filteredData}`);
     } else {
