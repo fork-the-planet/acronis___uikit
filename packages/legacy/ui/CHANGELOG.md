@@ -1,5 +1,33 @@
 ## [0.36.1](https://github.com/acronis/shadcn-uikit/compare/v0.36.0...v0.36.1) (2026-05-18)
 
+## 0.36.2
+
+### Patch Changes
+
+- [#53](https://github.com/acronis/uikit/pull/53) [`30e5210`](https://github.com/acronis/uikit/commit/30e521043728453a6f21355315c1ed986fcdfc86) Thanks [@heygabecom](https://github.com/heygabecom)! - Fix: `dist/components/ui/drawer.d.ts` now ships with the published
+  tarball. Previously, `vite-plugin-dts` failed with TS2742 ("inferred type
+  cannot be named") on six of the ten drawer exports because their types
+  reach into `@radix-ui/react-dialog` (vaul's underlying primitive), which
+  wasn't a declared dependency of the package — so the emitter had no
+  portable specifier for the type imports.
+
+  Adding `@radix-ui/react-dialog` as a direct dependency gives the `.d.ts`
+  emitter a portable path. No source changes; the runtime tarball is
+  identical. Consumers using `<Drawer />`, `<DrawerTrigger />`,
+  `<DrawerContent />`, etc. now get full type information.
+
+- [#64](https://github.com/acronis/uikit/pull/64) [`3550e41`](https://github.com/acronis/uikit/commit/3550e41cce9a8fa8097e64cd6a15622ed2ff204f) Thanks [@leonid](https://github.com/leonid)! - Internal: relocate the library to `packages/legacy/ui` as part of the monorepo
+  restructure. No runtime, API, or type changes — the published tarball contents
+  are identical to `0.36.1`.
+
+- [#65](https://github.com/acronis/uikit/pull/65) [`d241835`](https://github.com/acronis/uikit/commit/d24183501f09b0506b1ebdcb671d89d88bef806e) Thanks [@leonid](https://github.com/leonid)! - Fix: `./components/*` subpath exports now ship the `types` condition
+  explicitly. Under `moduleResolution: "bundler"` (and `"node16"`/`"nodenext"`),
+  TypeScript previously couldn't resolve `.d.ts` files via the wildcard's
+  bare-string mapping and silently fell back to the JS sibling — so deep
+  imports like `@acronis-platform/shadcn-uikit/components/ui/sonner`
+  appeared to consumers as "Cannot find module". The runtime resolution is
+  unchanged.
+
 ### Bug Fixes
 
 - conditionally disable Vitest addon and update TypeScript configuration ([6cc7c33](https://github.com/acronis/shadcn-uikit/commit/6cc7c33a2ab2fc51ee0cf52d27c5da54e9d4424a))
