@@ -1,4 +1,4 @@
-# Spec — @acronis-platform/assets pack manifests
+# Spec — @acronis-platform/design-assets pack manifests
 
 The normative contract for pack manifests: how the format diverges from DTCG, the cases a manifest MUST cover, the rules its keys MUST follow, and how a renderer resolves a schema-valid manifest into concrete `(Asset, Variant) → binary-or-derivation` outputs. The schema ([`../schemas/pack.schema.json`](../schemas/pack.schema.json)) says what is _legal_; this document says what cases must be _covered_ and how to _read_ a legal manifest.
 
@@ -47,7 +47,7 @@ The Pack names its canonical variant by marking exactly one entry in `values` wi
 
 `$extensions` exists in asset manifests, but with a much narrower contract than DTCG's general-purpose extension mechanism.
 
-| Prefix          | Status in `@acronis-platform/assets`                                                                                                                                                  |
+| Prefix          | Status in `@acronis-platform/design-assets`                                                                                                                                           |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `com.figma.*`   | **Allowed.** Round-trip identity carried back to Figma — `com.figma.nodeId`, `com.figma.variableId` (validated by name, typed `string`). The only prefix with a defined meaning here. |
 | `com.acronis.*` | **NOT used.** Project metadata lives at top-level keys (`values`, `platforms`, `metadata`) instead. The assets schema does not expect any `com.acronis.*` key.                        |
@@ -61,7 +61,7 @@ Forbidden:
 
 ### DTCG snapshot and cross-package symmetry
 
-Assets does NOT vendor the DTCG spec. The single canonical DTCG copy lives in `@acronis-platform/tokens`, which still consumes the DTCG shape; assets only borrows the `$`-prefix vocabulary and otherwise diverges. The assets package moved project fields out of `$extensions` first; `@acronis-platform/tokens` later followed for `modes` (→ top-level `values`) and `platform` (→ top-level `platforms`). The two packages now share access paths for those two concepts. The tokens-only `com.acronis.units` carrier and typography hints (`com.acronis.textCase`, `com.acronis.textDecoration`) have no assets equivalent and stay inside the tokens-side `$extensions`.
+Assets does NOT vendor the DTCG spec. The single canonical DTCG copy lives in `@acronis-platform/design-tokens`, which still consumes the DTCG shape; assets only borrows the `$`-prefix vocabulary and otherwise diverges. The assets package moved project fields out of `$extensions` first; `@acronis-platform/design-tokens` later followed for `modes` (→ top-level `values`) and `platform` (→ top-level `platforms`). The two packages now share access paths for those two concepts. The tokens-only `com.acronis.units` carrier and typography hints (`com.acronis.textCase`, `com.acronis.textDecoration`) have no assets equivalent and stay inside the tokens-side `$extensions`.
 
 ---
 

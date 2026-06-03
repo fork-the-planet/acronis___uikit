@@ -1,4 +1,4 @@
-# Contributing to `@acronis-platform/tokens`
+# Contributing to `@acronis-platform/design-tokens`
 
 This guide covers the day-to-day authoring tasks: keeping the tokens and Figma in step (the two [sync pipelines](#sync-pipelines)), adding a new mode, adding a new `$type` or `$extensions` key, and validating your work. For deeper conceptual context (modes, themes, alias chains, the DTCG divergence, the Figma sync) see this package's `context/` directory — the references at the bottom of this file point you at the right doc per topic.
 
@@ -93,7 +93,7 @@ A new `com.acronis.*` key also needs a context-file owner (a `.md` file under `c
 pnpm validate
 ```
 
-Run `pnpm validate` from `packages/design/tokens/` (or `pnpm --filter @acronis-platform/tokens validate` from the repo root) before committing. It catches:
+Run `pnpm validate` from `packages/design-tokens/` (or `pnpm --filter @acronis-platform/design-tokens validate` from the repo root) before committing. It catches:
 
 - Token files that don't conform to `tokens.schema.json` (missing `platforms` on a token, unknown `$type`, unknown `$extensions` key prefix, malformed `com.figma.variableId`, etc.).
 

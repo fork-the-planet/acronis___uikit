@@ -1,6 +1,6 @@
 # Spec — token format
 
-The token-format contract for `@acronis-platform/tokens`: how the emitted `.tokens.json` files relate to the DTCG 2025.10 spec, what lives under `$extensions` (the `com.acronis.*` / `com.figma.*` namespaces), and the naming rules for ids, filenames, and `$type`. The concrete data model — modes, aliasing, platform scope, and what files exist — is in [`manifest.md`](./manifest.md).
+The token-format contract for `@acronis-platform/design-tokens`: how the emitted `.tokens.json` files relate to the DTCG 2025.10 spec, what lives under `$extensions` (the `com.acronis.*` / `com.figma.*` namespaces), and the naming rules for ids, filenames, and `$type`. The concrete data model — modes, aliasing, platform scope, and what files exist — is in [`manifest.md`](./manifest.md).
 
 ## Relationship to DTCG
 

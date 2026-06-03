@@ -1,6 +1,6 @@
 # Manifest — token files
 
-The shape of the `@acronis-platform/tokens` token files, how their token values vary by mode and platform, and how they resolve through the alias chain. For DTCG/format rules, `$extensions` namespacing, and naming see [`spec.md`](./spec.md); for how these files are updated/synced from Figma see [`figma-sync.md`](./figma-sync.md). Vocabulary (Tier, Group, Mode, Theme, Brand, Collection) lives in [`glossary.md`](./glossary.md). The authoritative schema is [`../schemas/tokens.schema.json`](../schemas/tokens.schema.json).
+The shape of the `@acronis-platform/design-tokens` token files, how their token values vary by mode and platform, and how they resolve through the alias chain. For DTCG/format rules, `$extensions` namespacing, and naming see [`spec.md`](./spec.md); for how these files are updated/synced from Figma see [`figma-sync.md`](./figma-sync.md). Vocabulary (Tier, Group, Mode, Theme, Brand, Collection) lives in [`glossary.md`](./glossary.md). The authoritative schema is [`../schemas/tokens.schema.json`](../schemas/tokens.schema.json).
 
 ## The files
 
@@ -116,7 +116,7 @@ Alias values live inside the [`values.{modeName}` dict](#modes--themes) on each 
 
 ## Platform scope
 
-> ⚠️ This enum is mirrored in `@acronis-platform/assets`; the two MUST stay in sync — a change here requires the same change there.
+> ⚠️ This enum is mirrored in `@acronis-platform/design-assets`; the two MUST stay in sync — a change here requires the same change there.
 
 Platform scope declares which consumers a token targets so downstream tooling can route correctly. It lives at `token.platforms` — top-level on the token, sibling to `values` / `$value` / `$extensions`. No collection-level inheritance, no per-mode override, no group-level placement. Every token MUST declare `platforms`.
 

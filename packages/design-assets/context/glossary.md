@@ -7,17 +7,17 @@ Vocabulary used throughout this package. Other context files use these terms pre
 
 ## Schema
 
-- **`$schema`** — the per-manifest discriminator URI (`../schemas/pack.schema.json` for packs, `../schemas/rule.schema.json` for rules). Identifies a file as an `@acronis-platform/assets` manifest rather than a DTCG token file; a generic DTCG consumer MUST refuse to parse it as DTCG. See [`spec.md`](./spec.md).
+- **`$schema`** — the per-manifest discriminator URI (`../schemas/pack.schema.json` for packs, `../schemas/rule.schema.json` for rules). Identifies a file as an `@acronis-platform/design-assets` manifest rather than a DTCG token file; a generic DTCG consumer MUST refuse to parse it as DTCG. See [`spec.md`](./spec.md).
 
 - **Vector / Raster** — the `$type` of a Pack or Asset. `vector` = SVG; `raster` = PNG / WebP / etc. Declared at the Pack root and inherits down the tree; an Asset MAY override its own `$type`.
 
 ## Rules
 
-- **Rule** — a named, parameterized transform declared once under [`../../assets/rules/`](../../assets/rules/) and referenced from a computed value's `$rules` array. Rules are pure declarations today; the executor that applies them is out of scope. See [`rules.md`](./rules.md).
+- **Rule** — a named, parameterized transform declared once under [`../rules/`](../rules/) and referenced from a computed value's `$rules` array. Rules are pure declarations today; the executor that applies them is out of scope. See [`rules.md`](./rules.md).
 
 ## Packs
 
-- **Pack** — a top-level catalog of Assets that share a style and medium. One manifest per Pack under [`../../assets/packs/`](../../assets/packs/). The 5 packs today: `icons-stroke-mono`, `icons-stroke-multi`, `icons-solid-mono`, `icons-solid-multi`, `illustrations`. See [`packs.md`](./packs.md).
+- **Pack** — a top-level catalog of Assets that share a style and medium. One manifest per Pack under [`../packs/`](../packs/). The 5 packs today: `icons-stroke-mono`, `icons-stroke-multi`, `icons-solid-mono`, `icons-solid-multi`, `illustrations`. See [`packs.md`](./packs.md).
 
 - **Asset** — the smallest catalog entry: one logical thing (e.g., `add`, `remove`, a hero illustration). Has a stable id, exists in exactly one Pack, expresses one or more Variants.
 

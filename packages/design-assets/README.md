@@ -1,4 +1,4 @@
-# @acronis-platform/assets
+# @acronis-platform/design-assets
 
 Acronis visual assets as data as custom JSON schema. Includes binies of icons, illustrations and othe visual assets. No runtime code.
 
@@ -16,7 +16,7 @@ Acronis visual assets as data as custom JSON schema. Includes binies of icons, i
 
 ## Introduction
 
-`@acronis-platform/assets` is **design data only**, technology-agnostic. It ships JSON manifests plus the binary files (`.svg`, `.png`, `.webp`) those manifests reference — no components, no build, no runtime API. The canonical form stays as data so no consumer's conventions are baked in: the same `bell-24.svg` survives a React build, an SVG-sprite build, and a Figma sync without ever becoming any one platform's idea of what an icon is.
+`@acronis-platform/design-assets` is **design data only**, technology-agnostic. It ships JSON manifests plus the binary files (`.svg`, `.png`, `.webp`) those manifests reference — no components, no build, no runtime API. The canonical form stays as data so no consumer's conventions are baked in: the same `bell-24.svg` survives a React build, an SVG-sprite build, and a Figma sync without ever becoming any one platform's idea of what an icon is.
 
 The package is meant to be consumed by a **translation tool**: a build-time program that reads the manifests, resolves them, and emits platform-specific output (a React index, an SVG sprite, a resource catalog, a Figma sync payload, …).
 
@@ -26,7 +26,7 @@ The manifests borrow DTCG's `$`-prefix vocabulary (`$schema`, `$type`, `$descrip
 
 ### Schema
 
-- **Schema** — the JSON Schema (draft 2020-12) under [`schemas/`](./schemas/) that defines the validation contract for manifests and rules. The `$schema` field on every file points at its schema and is the discriminator a consumer uses to recognize an `@acronis-platform/assets` file (vs. a DTCG token file or anything else).
+- **Schema** — the JSON Schema (draft 2020-12) under [`schemas/`](./schemas/) that defines the validation contract for manifests and rules. The `$schema` field on every file points at its schema and is the discriminator a consumer uses to recognize an `@acronis-platform/design-assets` file (vs. a DTCG token file or anything else).
 
 ### Rules
 
@@ -50,7 +50,7 @@ Every key that can appear in a manifest. (`Level` names where it lives; `Require
 
 | Key            | Level         | Type / values                                         | Required                | Meaning                                                                                                                                   |
 | -------------- | ------------- | ----------------------------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `$schema`      | pack          | string (`"../schemas/pack.schema.json"`)              | yes                     | Schema discriminator; identifies the file as an `@acronis-platform/assets` manifest.                                                      |
+| `$schema`      | pack          | string (`"../schemas/pack.schema.json"`)              | yes                     | Schema discriminator; identifies the file as an `@acronis-platform/design-assets` manifest.                                               |
 | `name`         | pack          | string, `^[a-z][a-z0-9-]*$`                           | yes                     | Pack id; MUST equal the filename stem.                                                                                                    |
 | `version`      | pack          | string (semver)                                       | yes                     | Pack version; new manifests start at `"1.0.0"`.                                                                                           |
 | `$type`        | pack / asset  | `"vector"` \| `"raster"`                              | yes (pack)              | Medium. Declared at the pack root; inherits to every Asset unless the Asset overrides it.                                                 |
@@ -149,7 +149,7 @@ How to consume:
 
 ### Worked example — Style Dictionary
 
-[Style Dictionary](https://styledictionary.com/) is a widely-used token translator and a representative Translation Tool. This wires `@acronis-platform/assets` into a build that emits a JavaScript module mapping `<asset>-<size>` → file path. The same skeleton can emit an SVG sprite, a React index, or a Figma sync payload — only the `format` changes.
+[Style Dictionary](https://styledictionary.com/) is a widely-used token translator and a representative Translation Tool. This wires `@acronis-platform/design-assets` into a build that emits a JavaScript module mapping `<asset>-<size>` → file path. The same skeleton can emit an SVG sprite, a React index, or a Figma sync payload — only the `format` changes.
 
 ```js
 // style-dictionary.config.js
@@ -194,11 +194,14 @@ StyleDictionary.registerTransform({
   type: 'value',
   filter: (token) => token.type === 'asset',
   transform: (token) =>
-    token.value.replace(/^\.\//, 'node_modules/@acronis-platform/assets/'),
+    token.value.replace(
+      /^\.\//,
+      'node_modules/@acronis-platform/design-assets/'
+    ),
 });
 
 export default {
-  source: ['node_modules/@acronis-platform/assets/packs/*.json'],
+  source: ['node_modules/@acronis-platform/design-assets/packs/*.json'],
   parsers: ['acronis-assets-pack'],
   platforms: {
     js: {

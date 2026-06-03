@@ -1,10 +1,10 @@
 # Rules format
 
-How rule files under [`../../assets/rules/`](../../assets/rules/) are structured. The **executor** that applies a rule to a binary is out of scope today; these files are declarations.
+How rule files under [`../rules/`](../rules/) are structured. The **executor** that applies a rule to a binary is out of scope today; these files are declarations.
 
 ## File naming
 
-- One rule per file: `../../assets/rules/<name>.json`.
+- One rule per file: `../rules/<name>.json`.
 - Filename stem MUST equal the `name` field inside the file.
 - Pattern: `^[a-z][a-z0-9-]*$` — same as pack manifests.
 - Decimals use dash-as-decimal: `stroke-1-6` = stroke width 1.6.
@@ -40,7 +40,7 @@ The `target` shape is the same across all kinds today. `kind` distinguishes mean
 
 ## Adding a new kind
 
-1. Add it to the `kind` enum in [`../../assets/schemas/rule.schema.json`](../../assets/schemas/rule.schema.json).
+1. Add it to the `kind` enum in [`../schemas/rule.schema.json`](../schemas/rule.schema.json).
 2. Document its semantics in this file alongside `scale` and `stroke`.
 3. If the new kind needs more than one target value (e.g., a `padding` rule with four sides), the schema needs a per-kind branch — today's unified single-`target` shape assumes one target per rule.
 
@@ -48,9 +48,9 @@ The `target` shape is the same across all kinds today. `kind` distinguishes mean
 
 The unit enum is intentionally narrow. Widening it requires:
 
-1. Adding the new unit to the enum in [`../../assets/schemas/rule.schema.json`](../../assets/schemas/rule.schema.json).
+1. Adding the new unit to the enum in [`../schemas/rule.schema.json`](../schemas/rule.schema.json).
 2. Documenting it here (semantics, when to use, conversion expectations for the future executor).
-3. A motivating consumer — usually a token in `@acronis-platform/tokens` that needs the rule to operate in non-px units.
+3. A motivating consumer — usually a token in `@acronis-platform/design-tokens` that needs the rule to operate in non-px units.
 
 ## Initial rules
 

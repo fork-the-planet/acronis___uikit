@@ -55,7 +55,9 @@
           { "required": ["$value"] },
           {
             "required": ["$extensions"],
-            "properties": { "$extensions": { "required": ["com.acronis.units"] } }
+            "properties": {
+              "$extensions": { "required": ["com.acronis.units"] }
+            }
           }
         ]
       },
@@ -66,7 +68,9 @@
           { "required": ["$value"] },
           {
             "required": ["$extensions"],
-            "properties": { "$extensions": { "required": ["com.acronis.units"] } }
+            "properties": {
+              "$extensions": { "required": ["com.acronis.units"] }
+            }
           }
         ]
       }

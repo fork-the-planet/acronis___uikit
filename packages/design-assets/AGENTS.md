@@ -1,6 +1,6 @@
-# AGENTS.md — `packages/design/assets`
+# AGENTS.md — `packages/design-assets`
 
-`@acronis-platform/assets` — a **published** data-only workspace:
+`@acronis-platform/design-assets` — a **published** data-only workspace:
 DTCG-divergent JSON manifests for icons and illustrations, plus the
 bundled icon/illustration binaries they point at. No components, no
 build, no runtime API — it ships data.
@@ -10,7 +10,7 @@ DTCG-conformant: project fields live at top-level keys (`values`,
 `platforms`, `metadata`), not inside `$extensions.com.acronis.*`.
 
 Repo-wide rules (TypeScript, file naming, Conventional Commits,
-Changesets) live in the repo root's [`../../../context/`](../../../context/)
+Changesets) live in the repo root's [`../../context/`](../../context/)
 and apply on top. This file documents only what is specific to this
 workspace; the deeper conceptual reference lives in
 [`./context/`](./context/).
@@ -20,8 +20,8 @@ workspace; the deeper conceptual reference lives in
 This is the only script that does real work. From the repo root:
 
 ```bash
-pnpm --filter @acronis-platform/assets test       # alias for validate
-pnpm --filter @acronis-platform/assets validate    # ajv-compiles both schemas, validates packs/*.json and rules/*.json
+pnpm --filter @acronis-platform/design-assets test       # alias for validate
+pnpm --filter @acronis-platform/design-assets validate    # ajv-compiles both schemas, validates packs/*.json and rules/*.json
 ```
 
 `build` / `dev` / `clean` / `lint` / `typecheck` are intentional no-ops
@@ -65,7 +65,7 @@ full license text there (see [`CONTRIBUTING.md`](./CONTRIBUTING.md)).
 
 This is a **published** workspace, so a change to its published surface
 (`packs/`, `rules/`, `schemas/`, the `exports` map) needs a changeset.
-See [`../../../context/releasing.md`](../../../context/releasing.md).
+See [`../../context/releasing.md`](../../context/releasing.md).
 
 ## Conventions for new context files
 

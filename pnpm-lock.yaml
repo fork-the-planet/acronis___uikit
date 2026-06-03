@@ -361,7 +361,7 @@ importers:
         specifier: 'catalog:'
         version: 6.0.3
 
-  packages/design/tokens:
+  packages/design-assets:
     devDependencies:
       ajv:
         specifier: 'catalog:'
@@ -373,7 +373,7 @@ importers:
         specifier: 'catalog:'
         version: 3.0.1(ajv@8.17.1)
 
-  packages/design/assets:
+  packages/design-tokens:
     devDependencies:
       ajv:
         specifier: 'catalog:'
@@ -11231,7 +11231,7 @@ snapshots:
 
   ajv-cli@5.0.0:
     dependencies:
-      ajv: 8.17.1
+      ajv: 8.20.0
       fast-json-patch: 2.2.1
       glob: 7.2.3
       js-yaml: 3.14.2
@@ -13754,7 +13754,7 @@ snapshots:
 
   json-schema-migrate@2.0.0:
     dependencies:
-      ajv: 8.17.1
+      ajv: 8.20.0
 
   json-schema-traverse@0.4.1: {}
 

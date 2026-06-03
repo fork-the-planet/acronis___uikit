@@ -1,12 +1,12 @@
 # Packs
 
-The catalog of Packs in `@acronis-platform/assets`: the Packs that exist today and where
+The catalog of Packs in `@acronis-platform/design-assets`: the Packs that exist today and where
 their manifests live, how their files are laid out on disk, and the naming rules
 for ids and files.
 
 ## The packs
 
-`../../assets/packs/<pack-id>.json` — one manifest per Pack. The filename stem
+`../packs/<pack-id>.json` — one manifest per Pack. The filename stem
 MUST equal the manifest's `name` field. See [`manifest.md`](./manifest.md).
 
 | Pack id              | `$type` | Canonical size | Defaulted sizes                                  | Purpose                                                                                                                                                                                             |
@@ -30,10 +30,10 @@ for the id rules.
 
 ### Adding a new Pack
 
-1. Add the manifest: `../../assets/packs/<new-pack-id>.json`. Use an existing
+1. Add the manifest: `../packs/<new-pack-id>.json`. Use an existing
    manifest as a template.
 2. Add the binary directory next to the manifest:
-   `../../assets/packs/<new-pack-id>/.gitkeep`. See [Binary layout](#binary-layout).
+   `../packs/<new-pack-id>/.gitkeep`. See [Binary layout](#binary-layout).
 3. Add a row to the table above.
 4. CLAUDE.md does NOT need updating unless the new Pack introduces a new concept
    (e.g., a new `$type` value, a new metadata field).
@@ -55,7 +55,7 @@ The Pack manifest and the Pack binary directory sit **side by side** under
 `packs/`, sharing the same stem — flat, per Pack, co-located with the manifest:
 
 ```text
-../../assets/packs/
+../packs/
   icons-stroke-mono.json
   icons-stroke-mono/
     add-24.svg
@@ -96,12 +96,12 @@ Forbidden:
 
 ### Orphans and missing files
 
-- **Orphan binary** — a file under `../../assets/packs/<pack>/` that no manifest
+- **Orphan binary** — a file under `../packs/<pack>/` that no manifest
   entry references. Defect.
 - **Missing binary** — a `$file` path in a manifest that does not exist on disk.
   Defect.
 - Neither is caught by
-  [`../../assets/schemas/pack.schema.json`](../../assets/schemas/pack.schema.json);
+  [`../schemas/pack.schema.json`](../schemas/pack.schema.json);
   both will be caught by a future validator script.
 
 ### Renaming an Asset
@@ -120,7 +120,7 @@ sibling under `packs/` — but Assets within it stay flat.
 
 ## Naming conventions
 
-Rules for ids, filenames, JSON keys, and `$type` values in `@acronis-platform/assets`.
+Rules for ids, filenames, JSON keys, and `$type` values in `@acronis-platform/design-assets`.
 
 ### Ids (asset ids, pack ids, rule ids, etc.)
 

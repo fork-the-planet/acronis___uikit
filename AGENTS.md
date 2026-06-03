@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Single source of truth for AI agents working in `acronis/shadcn-uikit`.
+Single source of truth for AI agents working in `acronis/uikit`.
 
 This file is the **root index**. It is intentionally short (~120 lines) so
 it fits in any context window. Specifics live in:
@@ -14,7 +14,7 @@ workspace's context when you work inside that subtree.
 
 ## Repository overview
 
-`acronis/shadcn-uikit` is a pnpm monorepo containing a React component
+`acronis/uikit` is a pnpm monorepo containing a React component
 library, a demo SPA, a documentation site, a shared demos package, and
 two design-data packages (assets and tokens). The library and the two
 design-data packages are published; the apps are private.
@@ -27,14 +27,14 @@ design-data packages are published; the apps are private.
 | `apps/demo/`              | `@acronis-platform/shadcn-uikit-demo`  | no         | Vite SPA, React Router v7, Zustand                                     | [AGENTS.md](apps/demo/AGENTS.md)              |
 | `apps/docs/`              | `@acronis-platform/shadcn-uikit-docs`  | no         | Next.js 15 + Fumadocs                                                  | [AGENTS.md](apps/docs/AGENTS.md)              |
 | `apps/demos/`             | `@acronis-platform/shadcn-uikit-demos` | no         | source-only (no build, no dev server)                                  | [AGENTS.md](apps/demos/AGENTS.md)             |
-| `packages/design/tokens/` | `@acronis-platform/tokens`             | **yes**    | JSON data only (DTCG-2025.10 design tokens), ajv-validated             | [AGENTS.md](packages/design/tokens/AGENTS.md) |
-| `packages/design/assets/` | `@acronis-platform/assets`             | **yes**    | JSON data only (icon/illustration manifests + binaries), ajv-validated | [AGENTS.md](packages/design/assets/AGENTS.md) |
+| `packages/design-tokens/` | `@acronis-platform/design-tokens`      | **yes**    | JSON data only (DTCG-2025.10 design tokens), ajv-validated             | [AGENTS.md](packages/design-tokens/AGENTS.md) |
+| `packages/design-assets/` | `@acronis-platform/design-assets`      | **yes**    | JSON data only (icon/illustration manifests + binaries), ajv-validated | [AGENTS.md](packages/design-assets/AGENTS.md) |
 
-`packages/` groups workspaces by family under a parent directory:
+`packages/` holds the published workspaces:
 
-- `packages/ui-legacy/` houses the published UI library.
-- `packages/design/` houses the published **design-data** packages —
-  `assets` and `tokens`. These ship JSON (and, for assets, bundled
+- `packages/ui-legacy/` — the published UI library.
+- `packages/design-tokens/` and `packages/design-assets/` — the published
+  **design-data** packages. These ship JSON (and, for assets, bundled
   binaries) only: no build step, no runtime API. Their one real script
   is `validate` (ajv); `build`/`dev`/`clean`/`lint`/`typecheck` are
   no-ops and `test` aliases `validate`.

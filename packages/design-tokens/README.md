@@ -1,4 +1,4 @@
-# @acronis-platform/tokens
+# @acronis-platform/design-tokens
 
 Acronis design tokens as data — DTCG-2025.10-conformant JSON. No runtime code.
 
@@ -18,7 +18,7 @@ Acronis design tokens as data — DTCG-2025.10-conformant JSON. No runtime code.
 
 ## Introduction
 
-`@acronis-platform/tokens` is **design data only**, technology-agnostic. It ships JSON token files — every color, dimension, typography, and per-component value across Acronis surfaces — and nothing else: no components, no build, no runtime API. The files are **[DTCG 2025.10](https://www.designtokens.org/tr/2025.10/)**-conformant.
+`@acronis-platform/design-tokens` is **design data only**, technology-agnostic. It ships JSON token files — every color, dimension, typography, and per-component value across Acronis surfaces — and nothing else: no components, no build, no runtime API. The files are **[DTCG 2025.10](https://www.designtokens.org/tr/2025.10/)**-conformant.
 
 Keeping the canonical form as data means no consumer's conventions are baked in. The same `palette.blue.7` ends up in a CSS file, a Tailwind config, and an iOS Asset Catalog without ever becoming one of their conventions — each team owns its own pipeline.
 
@@ -241,7 +241,7 @@ Because the token files **are** DTCG-conformant, generic DTCG tooling largely wo
 
 ### Worked example — Style Dictionary
 
-[Style Dictionary](https://styledictionary.com/) v4 is a widely-used token translator and a representative Translation Tool in the DTCG sense. This example wires `@acronis-platform/tokens` into a Style Dictionary build that fans out to **three** outputs in a single config: CSS custom properties, a JS module, and a Tailwind v4 `@theme` block. The same skeleton can be extended with SCSS, iOS, or any other platform — only the per-platform `format` changes.
+[Style Dictionary](https://styledictionary.com/) v4 is a widely-used token translator and a representative Translation Tool in the DTCG sense. This example wires `@acronis-platform/design-tokens` into a Style Dictionary build that fans out to **three** outputs in a single config: CSS custom properties, a JS module, and a Tailwind v4 `@theme` block. The same skeleton can be extended with SCSS, iOS, or any other platform — only the per-platform `format` changes.
 
 ```js
 // style-dictionary.config.js
@@ -285,7 +285,7 @@ StyleDictionary.registerParser({
 });
 
 export default {
-  source: ['node_modules/@acronis-platform/tokens/tokens/*.json'],
+  source: ['node_modules/@acronis-platform/design-tokens/tokens/*.json'],
   parsers: ['acronis-tokens'],
   platforms: {
     css: {

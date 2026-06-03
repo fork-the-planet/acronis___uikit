@@ -102,7 +102,7 @@ Each entry is one of:
 ```
 
 - `$file` is project-relative and MUST match `^\.\/packs/[a-z0-9-]+/[a-z0-9-]+\.(svg|png|webp)$`.
-- MUST resolve under [`../../assets/packs/<pack>/`](../../assets/packs/) at commit time.
+- MUST resolve under [`../packs/<pack>/`](../packs/) at commit time.
 - A source points at a binary; it is not computed from anything else.
 
 ### Computed — `$rules` (+ optional `$from`)
@@ -111,7 +111,7 @@ Each entry is one of:
 "16": { "$rules": ["scale-16", "stroke-1-6"] }
 ```
 
-- `$rules` is a non-empty array of rule ids declared under [`../../assets/rules/`](../../assets/rules/). See [`rules.md`](./rules.md).
+- `$rules` is a non-empty array of rule ids declared under [`../rules/`](../rules/). See [`rules.md`](./rules.md).
 - Rules apply **left to right** against the resolved source. The same rule MAY appear more than once, but reviewers SHOULD flag this — it usually indicates intent that belongs in a new rule.
 - **`$from` is omitted in the common case** — the computation then runs against the asset's **effective canonical** (see below). Most pack-shared computations omit `$from`.
 - Provide `$from: "<sibling-id>"` **only** to compute from a _non-canonical_ sibling on the same asset:
@@ -176,7 +176,7 @@ A variant belongs in pack `values` when the _same_ value is shared by a strict m
 
 ### Worked example — pack values plus three assets
 
-This is the canonical reference (mirrors `../../assets/packs/concept-pack.json`).
+This is the canonical reference (mirrors `../packs/concept-pack.json`).
 
 ```json
 {
@@ -240,13 +240,13 @@ What each one demonstrates:
 
 ### Executor scope and runtime invariants
 
-The manifest declares INTENT. The executor that reads a rule file and transforms an SVG is **out of scope today**; rule files under [`../../assets/rules/`](../../assets/rules/) describe semantics precisely enough that an executor can be implemented later — see [`rules.md`](./rules.md). Resolution (merging values, picking the canonical, emitting derivation plans) is specified in [`spec.md`](./spec.md), which also checks invariants the schema does NOT enforce:
+The manifest declares INTENT. The executor that reads a rule file and transforms an SVG is **out of scope today**; rule files under [`../rules/`](../rules/) describe semantics precisely enough that an executor can be implemented later — see [`rules.md`](./rules.md). Resolution (merging values, picking the canonical, emitting derivation plans) is specified in [`spec.md`](./spec.md), which also checks invariants the schema does NOT enforce:
 
 - That `$file` paths actually exist on disk.
 - That a `$from` sibling — or, when `$from` is omitted, the effective canonical — exists and is non-null in the merged values map.
 - That the effective `values` for an Asset resolves a canonical to a `$file` source.
 - That exactly one canonical (`"default": true`) is in effect after the pack/asset merge.
-- That `$rules` ids resolve to files in [`../../assets/rules/`](../../assets/rules/).
+- That `$rules` ids resolve to files in [`../rules/`](../rules/).
 - That derivation chains are acyclic.
 
 ## Metadata
@@ -282,7 +282,7 @@ Pack-level inheritance exists for `values` only (see [Pack-level `values`](#pack
 
 ## Platform scope
 
-> ⚠️ This enum is mirrored in `@acronis-platform/tokens`; the two MUST stay in sync — a
+> ⚠️ This enum is mirrored in `@acronis-platform/design-tokens`; the two MUST stay in sync — a
 > change here requires the same change there.
 
 Platform scope declares which consumers an asset targets so downstream tooling can route correctly. Stored at the top-level `platforms` key on each Asset, sibling to `values` and `metadata`:
