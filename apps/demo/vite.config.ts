@@ -22,7 +22,7 @@ const resolveAtAlias = (): Plugin => ({
 
       // Determine base path based on importer location (normalize separators for Windows)
       const normalizedImporter = importer.replace(/\\/g, '/');
-      const isFromUikit = normalizedImporter.includes('/ui/src/');
+      const isFromUikit = normalizedImporter.includes('/ui-legacy/src/');
       const isFromDemos = normalizedImporter.includes('/demos/src/');
       const basePath = isFromUikit
         ? source.replace('@/', '../../packages/ui-legacy/src/')
