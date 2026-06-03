@@ -1,6 +1,7 @@
 packages:
   - 'apps/*'
   - 'packages/*'
+  - 'tools/*'
 
 # Single source of truth for dependency versions used by more than one
 # workspace. Workspaces refer to these with "catalog:" — pnpm rewrites
