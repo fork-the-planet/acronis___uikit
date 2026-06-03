@@ -2,7 +2,7 @@ import * as React from 'react';
 
 export interface IconProps extends Omit<
   React.SVGProps<SVGSVGElement>,
-  'stroke' | 'fill' | 'strokeWidth'
+  'children'
 > {
   /** Rendered size in px. Defaults to 24 — the canonical asset size. */
   size?: number;
@@ -14,12 +14,10 @@ export interface IconProps extends Omit<
 }
 
 export interface SvgIconProps extends IconProps {
-  mode: 'stroke' | 'solid';
-  viewBox?: string;
   /**
    * Map of rendered size (px) → stroke width in viewBox user units, derived
-   * from the design-assets scale + stroke rules at generation time. Stroke
-   * mode only. Falls back to the canonical (24) value for unmapped sizes.
+   * from the design-assets scale + stroke rules at generation time. Applied to
+   * the `<svg>` (stroke packs only); falls back to the canonical (24) value.
    */
   strokeWidthBySize?: Record<number, number>;
   children: React.ReactNode;
@@ -27,39 +25,29 @@ export interface SvgIconProps extends IconProps {
 
 /**
  * Shared renderer for generated icon components. The design-assets master is a
- * 24px vector; the scale + stroke rules are baked into `strokeWidthBySize` so a
- * single source renders at any size with the designed stroke weight (e.g. 1.6px
- * at 16, 2.5px at 32). Color comes from `currentColor`, so icons inherit the
- * surrounding text color.
+ * 24px vector; the scale + stroke rules are baked into `strokeWidthBySize` (by
+ * the generator) so one source renders at any size with the designed stroke
+ * weight. Paint defaults (`currentColor`, `fill: none`, line caps) are supplied
+ * by each pack's generated wrapper and can be overridden per call.
  */
 export const SvgIcon = React.forwardRef<SVGSVGElement, SvgIconProps>(
   function SvgIcon(
     {
-      mode,
       size = 24,
       viewBox = '0 0 24 24',
       strokeWidthBySize,
       title,
       children,
-      ...props
+      ...rest
     },
     ref
   ) {
     const a11y = title
       ? { role: 'img', 'aria-label': title }
       : { 'aria-hidden': true, focusable: false };
-
-    const paint =
-      mode === 'stroke'
-        ? ({
-            fill: 'none',
-            stroke: 'currentColor',
-            strokeWidth:
-              strokeWidthBySize?.[size] ?? strokeWidthBySize?.[24] ?? 2,
-            strokeLinecap: 'round',
-            strokeLinejoin: 'round',
-          } as const)
-        : ({ fill: 'currentColor' } as const);
+    const strokeWidth = strokeWidthBySize
+      ? (strokeWidthBySize[size] ?? strokeWidthBySize[24])
+      : undefined;
 
     return (
       <svg
@@ -68,9 +56,9 @@ export const SvgIcon = React.forwardRef<SVGSVGElement, SvgIconProps>(
         width={size}
         height={size}
         viewBox={viewBox}
+        {...(strokeWidth != null ? { strokeWidth } : {})}
         {...a11y}
-        {...paint}
-        {...props}
+        {...rest}
       >
         {title ? <title>{title}</title> : null}
         {children}

@@ -656,6 +656,9 @@ importers:
       '@acronis-platform/design-theme':
         specifier: workspace:*
         version: link:../design-theme
+      '@acronis-platform/icons-react':
+        specifier: workspace:*
+        version: link:../icons-react
       '@base-ui/react':
         specifier: 'catalog:'
         version: 1.4.1(@date-fns/tz@1.5.0)(@types/react@19.2.15)(date-fns@4.3.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)

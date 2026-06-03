@@ -15,6 +15,18 @@
     "./stroke-mono": {
       "import": "./dist/stroke-mono/index.js",
       "types": "./dist/stroke-mono/index.d.ts"
+    },
+    "./solid-mono": {
+      "import": "./dist/solid-mono/index.js",
+      "types": "./dist/solid-mono/index.d.ts"
+    },
+    "./stroke-multi": {
+      "import": "./dist/stroke-multi/index.js",
+      "types": "./dist/stroke-multi/index.d.ts"
+    },
+    "./solid-multi": {
+      "import": "./dist/solid-multi/index.js",
+      "types": "./dist/solid-multi/index.d.ts"
     }
   },
   "files": [

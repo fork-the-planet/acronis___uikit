@@ -31,22 +31,26 @@ The hand-written code is small:
   `icon.tsx`, applied at runtime via the `size` prop. So one master renders
   at any size with the designed stroke weight (1.6px @16, 2px @24, 2.5px @32).
 - **mono** packs → `stroke`/`fill` become `currentColor` (inherit text
-  color). **multi** packs (multi-color) are deferred — they need a color
-  strategy (keep literal colors vs. map to `@acronis-platform/design-theme`
-  tokens) before generation.
+  color). **multi** packs → authored colors (incl. gradients) are kept
+  verbatim; gradient/clip `id`s are namespaced per icon (`<asset>-<id>`) so
+  they don't collide when multiple icons render on one page. Stroke packs
+  still take their stroke width from the rules even when multicolor.
 
 ## Public API
 
-- Per-pack subpath exports: `@acronis-platform/icons-react/stroke-mono`.
+- Per-pack subpath exports: `@acronis-platform/icons-react/{stroke,solid}-{mono,multi}`.
 - Per-icon **named exports** (`BanIcon`, `ChevronDownIcon`) — tree-shakeable.
 - A pack `icons` registry + `IconName` type for dynamic lookup (importing
   `icons` pulls the whole pack; prefer named imports for bundle size).
 - Root `.` export ships the `SvgIcon` base + `IconProps` for advanced use.
 
-## Scope (first iteration)
+## Packs
 
-Only `icons-stroke-mono` (40 icons). solid-mono / stroke-multi / solid-multi
-are one `scripts/packs.ts` entry away once multi-color handling is decided.
+All four design-assets icon packs are generated (see `scripts/packs.ts`):
+`stroke-mono` (40), `solid-mono` (3), `stroke-multi` (12), `solid-multi` (1).
+Counts grow as the upstream `@acronis-platform/design-assets` packs do — no
+code change needed. `@acronis-platform/ui-react` depends on this package so
+components/stories can compose icons.
 
 ## When you change anything
 
