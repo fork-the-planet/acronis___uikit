@@ -1,5 +1,30 @@
 # @acronis-platform/ui-react
 
+## 0.3.0
+
+### Minor Changes
+
+- [#94](https://github.com/acronis/uikit/pull/94) [`9e418d6`](https://github.com/acronis/uikit/commit/9e418d6fb7e4e52182e96dc26418daf82fde8c25) Thanks [@leonid](https://github.com/leonid)! - Add Figma Code Connect support to `ui-react` and align the Button with the
+  Figma "Button" component.
+  - **`ui-react`**: new Figma Code Connect setup (`figma.config.json`,
+    co-located `*.figma.tsx` files, `figma:connect*` scripts) linking
+    components to their Figma counterparts. The `Button` is fully connected and
+    its variants now match the Figma `Style` set: added `ai` (gradient) and
+    `inverted` variants, and re-pointed `default` / `secondary` / `ghost` /
+    `destructive` to the colors used in the mockup via button-local
+    `--color-btn-*` token bridges (the shared `--color-*` tokens are unchanged).
+    The legacy-only `outline` / `link` / `translucent` variants are retained for
+    parity with the shared demos.
+  - **`design-tokens`**: added the `colors.background.inverted-surface` semantic
+    tokens (idle / hover / active / disabled) that back the inverted button.
+  - **`design-theme`**: emits the new
+    `--av-colors-background-inverted-surface-*` custom properties.
+
+### Patch Changes
+
+- Updated dependencies [[`9e418d6`](https://github.com/acronis/uikit/commit/9e418d6fb7e4e52182e96dc26418daf82fde8c25)]:
+  - @acronis-platform/design-theme@0.5.0
+
 ## 0.2.3
 
 ### Patch Changes
