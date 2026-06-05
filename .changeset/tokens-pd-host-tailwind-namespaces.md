@@ -53,7 +53,23 @@ gradient). Dimension/typography keys drop the `ui-` prefix too
 (`button-global-gap`, `typography-body-default`). The `--ui-*` CSS variables that
 consumers actually bridge (via `@theme inline`) are unchanged.
 
-This renames the Tailwind preset's public keys. It has no consumers in this repo
-today (consumers use the CSS variables, not the JS preset), so the rename is safe
-in practice; it is released as a minor on the `0.x` line and called out here for
-the record.
+**Tailwind preset is now split per tier, so component utilities stay opt-in.**
+A single flat `tailwind/<brand>.js` is replaced by a shared semantic preset plus
+one preset per component:
+
+```
+tailwind/<brand>/tokens.js                     # shared vocabulary (bg-surface-primary, …)
+tailwind/<brand>/components/button.js          # button tokens only
+tailwind/<brand>/components/form.js
+…
+```
+
+Anything in a Tailwind theme is globally suggested by IntelliSense, so component
+tokens were leaking into autocomplete everywhere. Loading `tokens.js` for the
+shared vocabulary plus only the component presets a build needs keeps each
+component's utilities (`bg-button-primary-idle`, …) scoped to where it's used.
+
+This renames the Tailwind preset's public paths and keys. It has no consumers in
+this repo today (consumers use the CSS variables, not the JS preset), so the
+change is safe in practice; it is released as a minor on the `0.x` line and
+called out here for the record.
