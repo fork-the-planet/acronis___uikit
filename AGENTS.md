@@ -117,6 +117,8 @@ that workspace**, never here.
 - `context/roadmap.md` — product roadmap (epics, phases, v1 scope/timeline);
   tracked on GitHub Project #3 as issues #102–108. Companion task breakdowns:
   `context/backlog-p2-primitives.md`, `context/backlog-p3-p4.md`.
+- `context/project-board.md` — how we run Project #3: epic/task model, status
+  lifecycle + gates, fields, views, and automation.
 
 ## Tooling preconditions
 
