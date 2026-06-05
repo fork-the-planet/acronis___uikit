@@ -114,6 +114,9 @@ that workspace**, never here.
 
 - `context/releasing.md` — Changesets workflow that applies to any
   published workspace in the monorepo.
+- `context/roadmap.md` — product roadmap (epics, phases, v1 scope/timeline);
+  tracked on GitHub Project #3 as issues #102–108. Companion task breakdowns:
+  `context/backlog-p2-primitives.md`, `context/backlog-p3-p4.md`.
 
 ## Tooling preconditions
 
