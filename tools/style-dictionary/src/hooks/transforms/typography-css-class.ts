@@ -12,7 +12,7 @@ import type { Transform } from 'style-dictionary/types';
 import { transformTypes } from 'style-dictionary/enums';
 
 import { formatDimension, type DtcgDimension } from './dimension-px';
-import { formatScalar } from './scalar-css';
+import { formatFontFamily, formatScalar } from './scalar-css';
 
 export const TYPOGRAPHY_CSS_CLASS = 'typography/css-class';
 
@@ -47,7 +47,11 @@ export const typographyCssClass: Transform = {
     const declarations: string[] = [];
     for (const [field, property] of PROPERTIES) {
       if (!(field in fields)) continue;
-      const value = formatField(fields[field]);
+      const raw = fields[field];
+      const value =
+        field === 'fontFamily' && typeof raw === 'string'
+          ? formatFontFamily(raw)
+          : formatField(raw);
       if (value !== null) declarations.push(`${property}: ${value};`);
     }
     return declarations.join('\n');

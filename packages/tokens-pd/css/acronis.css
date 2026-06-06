@@ -158,7 +158,7 @@
 }
 
 .ui-typography-body-accent {
-  font-family: Inter;
+  font-family: Inter, system-ui, sans-serif;
   font-size: 14px;
   font-weight: 500;
   line-height: 24px;
@@ -166,7 +166,7 @@
 }
 
 .ui-typography-body-default {
-  font-family: Inter;
+  font-family: Inter, system-ui, sans-serif;
   font-size: 14px;
   font-weight: 400;
   line-height: 24px;
@@ -174,7 +174,7 @@
 }
 
 .ui-typography-body-form-label {
-  font-family: Inter;
+  font-family: Inter, system-ui, sans-serif;
   font-size: 14px;
   font-weight: 400;
   line-height: 16px;
@@ -182,7 +182,7 @@
 }
 
 .ui-typography-body-heading {
-  font-family: Inter;
+  font-family: Inter, system-ui, sans-serif;
   font-size: 14px;
   font-weight: 600;
   line-height: 24px;
@@ -190,7 +190,7 @@
 }
 
 .ui-typography-body-strong {
-  font-family: Inter;
+  font-family: Inter, system-ui, sans-serif;
   font-size: 14px;
   font-weight: 600;
   line-height: 24px;
@@ -198,7 +198,7 @@
 }
 
 .ui-typography-caption-accent {
-  font-family: Inter;
+  font-family: Inter, system-ui, sans-serif;
   font-size: 12px;
   font-weight: 500;
   line-height: 16px;
@@ -206,7 +206,7 @@
 }
 
 .ui-typography-caption-default {
-  font-family: Inter;
+  font-family: Inter, system-ui, sans-serif;
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
@@ -214,7 +214,7 @@
 }
 
 .ui-typography-caption-strong {
-  font-family: Inter;
+  font-family: Inter, system-ui, sans-serif;
   font-size: 12px;
   font-weight: 600;
   line-height: 16px;
@@ -222,7 +222,7 @@
 }
 
 .ui-typography-fineprint-heading {
-  font-family: Inter;
+  font-family: Inter, system-ui, sans-serif;
   font-size: 10px;
   font-weight: 700;
   line-height: 16px;
@@ -230,7 +230,7 @@
 }
 
 .ui-typography-headings-display {
-  font-family: Inter;
+  font-family: Inter, system-ui, sans-serif;
   font-size: 32px;
   font-weight: 400;
   line-height: 40px;
@@ -238,7 +238,7 @@
 }
 
 .ui-typography-headings-lead {
-  font-family: Inter;
+  font-family: Inter, system-ui, sans-serif;
   font-size: 18px;
   font-weight: 400;
   line-height: 24px;
@@ -246,7 +246,7 @@
 }
 
 .ui-typography-headings-title {
-  font-family: Inter;
+  font-family: Inter, system-ui, sans-serif;
   font-size: 24px;
   font-weight: 400;
   line-height: 32px;
@@ -254,7 +254,7 @@
 }
 
 .ui-typography-link-default {
-  font-family: Inter;
+  font-family: Inter, system-ui, sans-serif;
   font-size: 14px;
   font-weight: 400;
   line-height: 24px;
@@ -262,7 +262,7 @@
 }
 
 .ui-typography-link-default-underline {
-  font-family: Inter;
+  font-family: Inter, system-ui, sans-serif;
   font-size: 14px;
   font-weight: 400;
   line-height: 24px;
@@ -270,7 +270,7 @@
 }
 
 .ui-typography-link-strong {
-  font-family: Inter;
+  font-family: Inter, system-ui, sans-serif;
   font-size: 14px;
   font-weight: 600;
   line-height: 24px;
@@ -278,7 +278,7 @@
 }
 
 .ui-typography-link-strong-underline {
-  font-family: Inter;
+  font-family: Inter, system-ui, sans-serif;
   font-size: 14px;
   font-weight: 600;
   line-height: 24px;
@@ -286,7 +286,7 @@
 }
 
 .ui-typography-note-default {
-  font-family: Inter;
+  font-family: Inter, system-ui, sans-serif;
   font-size: 11px;
   font-weight: 600;
   line-height: 16px;
@@ -294,7 +294,7 @@
 }
 
 .ui-typography-note-heading {
-  font-family: Inter;
+  font-family: Inter, system-ui, sans-serif;
   font-size: 11px;
   font-weight: 700;
   line-height: 16px;

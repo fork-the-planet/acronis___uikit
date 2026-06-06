@@ -20,6 +20,7 @@
     "@acronis-platform/icons-react": "workspace:*",
     "@acronis-platform/tokens-pd": "workspace:*",
     "@acronis-platform/ui-react": "workspace:*",
+    "@fontsource/inter": "5.2.8",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

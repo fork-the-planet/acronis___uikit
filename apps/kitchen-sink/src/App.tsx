@@ -71,6 +71,7 @@ export default function App() {
     <div
       style={{
         minHeight: '100vh',
+        fontFamily: 'Inter, system-ui, sans-serif',
         background: 'var(--ui-background-surface-primary)',
         color: 'var(--ui-text-on-surface-primary)',
       }}
