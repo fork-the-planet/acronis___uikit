@@ -65,7 +65,8 @@ ui-react components render `--av-*` custom properties, so the token/theme
 contract must be stable before the component ladder accelerates.
 
 - [ ] **Theme delivery (mirror legacy)** — `tokens-pd` ships per-brand CSS
-      exports that set `--av-*`, consumed by `ui-react` via `@theme inline`;
+      exports that set `--av-*`, consumed by `ui-react` via `@theme inline`
+      (the Tailwind/CSS theme-injection directive used to expose those variables in component styles);
       selected by class toggle. Port the **white-label generation** concept (legacy
       `packages/ui-legacy/scripts/generate-white-label-themes.ts`) onto the Style
       Dictionary output.
@@ -196,7 +197,7 @@ migration guide (E6). On v1, `ui-legacy` goes security-only.
 
 - **Brands**: legacy four + any new Figma brand (data-driven generation). ✔
 - **Capacity**: **2 full-time + 2 part-time ≈ 3 FTE.** Matches the comfortable
-  baseline for end-Q3 v1 incl. the trim buffer. Aim part-timers at the
+  baseline for end-Q3 v1 including the trim buffer. Aim part-timers at the
   well-scoped S/M tasks (widgets, layout, docs); reserve full-timers for the
   critical path (E1, then Select/Combobox/Table cluster/Chart). ✔
 - **Tier-3**: proposed above (★ must-haves; widgets + extra layouts trimmable). ✔
@@ -226,3 +227,6 @@ To ratify early (they shape APIs/scope); tracked on the board under their epic:
 | #47       | Tooltip portal escape hatch             | E3 / E2 Tooltip |
 | #46       | Resizable columns                       | E3              |
 | #44       | Sticky / frozen columns                 | E3              |
+| #192      | RSC/Next support                        | E2              |
+| #193      | A11y level + browser matrix             | E7              |
+| #194      | Codemods vs manual migration            | E6              |
