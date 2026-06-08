@@ -21,13 +21,9 @@ Optimized SVG sprites generated from
 ### Inline `<use>`
 
 ```html
-<!-- Load a sprite once (hidden), then reference symbols by id -->
-<div hidden>
-  <svg><use href="/path/to/iconsprite-mono.svg" /></svg>
-</div>
-
+<!-- Reference a symbol from the external sprite file -->
 <svg class="icon" style="color: #0073e6;">
-  <use href="#m-add--16" />
+  <use href="/path/to/iconsprite-mono.svg#m-add--16" />
 </svg>
 ```
 
