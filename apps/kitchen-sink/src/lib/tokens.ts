@@ -54,6 +54,24 @@ export interface TokenGroup {
   tokens: { name: string }[];
 }
 
+/** A row of tokens that share a role (paints `bg` / `text` / `border` / …). */
+export interface RoleGroup {
+  /** Normalized role: `bg` | `text` | `border` | `glyph` | `focus`. */
+  role: string;
+  /** `name` is the full custom property; `leaf` is the part after the
+   *  role+context prefix (e.g. `primary-hover`) for a compact card label. */
+  tokens: { name: string; leaf: string }[];
+}
+
+/** Semantic tokens for one context (`surface`, `brand`, `status`, …),
+ *  split into role rows. */
+export interface ContextGroup {
+  context: string;
+  /** Total tokens across all role rows (for the heading count). */
+  count: number;
+  roles: RoleGroup[];
+}
+
 /** Per-component token CSS (not bundled by ui-react/styles). */
 const COMPONENT_SOURCES: { tier: string; css: string }[] = [
   { tier: 'breadcrumb', css: breadcrumbAcronis },
@@ -91,19 +109,115 @@ function tokenNames(css: string): string[] {
   return [...set].sort();
 }
 
-/** Semantic groups (`--ui-background-*`, `--ui-text-*`, …), grouped by tier. */
-export const semanticGroups: TokenGroup[] = (() => {
-  const byTier = new Map<string, string[]>();
-  for (const name of tokenNames(semanticAcronis)) {
-    const tier = name.slice('--ui-'.length).split('-')[0];
-    const list = byTier.get(tier) ?? [];
-    list.push(name);
-    byTier.set(tier, list);
+/**
+ * Semantic token taxonomy. Every name is `--ui-<role>-<context>-…`:
+ *   - background tokens read context directly  (`background-<context>-…`)
+ *   - text/border/glyph read it after `on-`     (`text-on-<context>-…`)
+ *   - focus has no context and is its own group (`focus-…`)
+ * We group by **context** first (how designers reason — "colors that live on a
+ * surface"), then by **role** within, so a surface's bg/text/border/glyph sit
+ * together instead of in four separate mega-buckets.
+ */
+const ROLE_LABEL: Record<string, string> = {
+  background: 'bg',
+  text: 'text',
+  border: 'border',
+  glyph: 'glyph',
+  focus: 'focus',
+};
+const CONTEXT_ORDER = [
+  'surface',
+  'brand',
+  'status',
+  'inverted',
+  'overlay',
+  'ai',
+  'focus',
+];
+const ROLE_ORDER = ['bg', 'text', 'border', 'glyph', 'focus'];
+
+/** Order states as a progression instead of alphabetically. */
+const STATE_RANK: Record<string, number> = {
+  idle: 1,
+  default: 1,
+  hover: 2,
+  active: 3,
+  pressed: 4,
+  disabled: 5,
+};
+
+function parseToken(name: string): {
+  context: string;
+  role: string;
+  leaf: string;
+} {
+  const segs = name.slice('--ui-'.length).split('-');
+  const role0 = segs[0];
+  if (role0 === 'focus') {
+    return { context: 'focus', role: 'focus', leaf: segs.slice(1).join('-') };
   }
-  return [...byTier.entries()].map(([tier, names]) => ({
-    tier,
-    tokens: names.map((name) => ({ name })),
-  }));
+  if (role0 === 'background') {
+    return { context: segs[1], role: 'bg', leaf: segs.slice(2).join('-') };
+  }
+  // text | border | glyph — context follows the `on-` marker.
+  const hasOn = segs[1] === 'on';
+  const context = hasOn ? segs[2] : segs[1];
+  const leaf = segs.slice(hasOn ? 3 : 2).join('-');
+  return { context, role: ROLE_LABEL[role0] ?? role0, leaf };
+}
+
+/** Sort by variant base, then state progression (idle → … → disabled). */
+function byState(a: string, b: string): number {
+  const key = (n: string): [string, number] => {
+    const segs = n.split('-');
+    const last = segs[segs.length - 1];
+    return last in STATE_RANK
+      ? [segs.slice(0, -1).join('-'), STATE_RANK[last]]
+      : [n, 0];
+  };
+  const [ba, ra] = key(a);
+  const [bb, rb] = key(b);
+  return ba === bb ? ra - rb : ba < bb ? -1 : 1;
+}
+
+/** Position in a fixed order array; unknowns sort last, then alphabetically. */
+function ordered<T extends string>(order: T[]) {
+  return (a: T, b: T): number => {
+    const ia = order.indexOf(a);
+    const ib = order.indexOf(b);
+    if (ia !== ib) return (ia < 0 ? order.length : ia) - (ib < 0 ? order.length : ib);
+    return a < b ? -1 : a > b ? 1 : 0;
+  };
+}
+
+/** Semantic colors grouped by context → role. */
+export const semanticContextGroups: ContextGroup[] = (() => {
+  const byContext = new Map<string, Map<string, string[]>>();
+  for (const name of tokenNames(semanticAcronis)) {
+    const { context, role } = parseToken(name);
+    const roles = byContext.get(context) ?? new Map<string, string[]>();
+    (roles.get(role) ?? roles.set(role, []).get(role)!).push(name);
+    byContext.set(context, roles);
+  }
+  const ctxSort = ordered(CONTEXT_ORDER);
+  const roleSort = ordered(ROLE_ORDER);
+  return [...byContext.entries()]
+    .sort(([a], [b]) => ctxSort(a, b))
+    .map(([context, roles]) => {
+      const roleGroups = [...roles.entries()]
+        .sort(([a], [b]) => roleSort(a, b))
+        .map(([role, names]) => ({
+          role,
+          tokens: names
+            .sort(byState)
+            .map((name) => ({ name, leaf: parseToken(name).leaf || name })),
+        }));
+      return {
+        context,
+        count: roleGroups.reduce((n, r) => n + r.tokens.length, 0),
+        roles: roleGroups,
+      };
+    });
 })();
 
 /** Per-component groups (`--ui-button-*`, `--ui-switch-*`, …). */

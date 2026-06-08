@@ -1,7 +1,9 @@
 import {
   componentGroups,
   resolveToken,
-  semanticGroups,
+  semanticContextGroups,
+  type ContextGroup,
+  type RoleGroup,
   type TokenGroup,
 } from '@/lib/tokens';
 
@@ -14,25 +16,17 @@ function isColorValue(value: string): boolean {
   );
 }
 
-function GroupHeading({ label, count }: { label: string; count: number }) {
-  return (
-    <h3
-      style={{
-        fontSize: 12,
-        textTransform: 'uppercase',
-        letterSpacing: 0.5,
-        opacity: 0.6,
-        marginBottom: 10,
-      }}
-    >
-      {label} <span style={{ fontWeight: 400 }}>({count})</span>
-    </h3>
-  );
-}
+const ROLE_LABELS: Record<string, string> = {
+  bg: 'Background',
+  text: 'Text',
+  border: 'Border',
+  glyph: 'Glyph',
+  focus: 'Focus',
+};
 
 /** One token: a swatch (colors/gradients) or a value chip (dimensions/etc.),
- *  plus the full `--ui-*` custom-property name. */
-function TokenCard({ name }: { name: string }) {
+ *  with a compact `label` up top and the full `--ui-*` name below. */
+function TokenCard({ name, label }: { name: string; label?: string }) {
   const value = resolveToken(name);
   const isColor = isColorValue(value);
   return (
@@ -66,13 +60,25 @@ function TokenCard({ name }: { name: string }) {
           {value || '—'}
         </div>
       )}
+      {label && (
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            marginTop: 4,
+            color: 'var(--ui-text-on-surface-primary)',
+          }}
+        >
+          {label}
+        </div>
+      )}
       <div
         style={{
           fontSize: 10,
           fontFamily: 'monospace',
-          marginTop: 4,
+          marginTop: label ? 1 : 4,
           wordBreak: 'break-all',
-          color: 'var(--ui-text-on-surface-primary)',
+          color: 'var(--ui-text-on-surface-secondary)',
         }}
       >
         {name}
@@ -94,17 +100,86 @@ function TokenCard({ name }: { name: string }) {
   );
 }
 
-function Group({ group }: { group: TokenGroup }) {
+const cardGrid = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+  gap: 12,
+} as const;
+
+/** A role row within a context — small role label, then its swatches. */
+function RoleRow({ group }: { group: RoleGroup }) {
   return (
-    <div>
-      <GroupHeading label={group.tier} count={group.tokens.length} />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-          gap: 12,
+          fontSize: 11,
+          fontWeight: 600,
+          color: 'var(--ui-text-on-surface-secondary)',
         }}
       >
+        {ROLE_LABELS[group.role] ?? group.role}{' '}
+        <span style={{ fontWeight: 400, opacity: 0.7 }}>
+          ({group.tokens.length})
+        </span>
+      </div>
+      <div style={cardGrid}>
+        {group.tokens.map((token) => (
+          <TokenCard key={token.name} name={token.name} label={token.leaf} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** A context section (Surface, Brand, Status, …) holding its role rows. */
+function ContextSection({ group }: { group: ContextGroup }) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 16,
+        padding: 16,
+        borderRadius: 8,
+        border: SWATCH_BORDER,
+        background: 'var(--ui-background-surface-primary)',
+      }}
+    >
+      <h4
+        style={{
+          fontSize: 13,
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: 0.5,
+          margin: 0,
+        }}
+      >
+        {group.context}{' '}
+        <span style={{ fontWeight: 400, opacity: 0.6 }}>({group.count})</span>
+      </h4>
+      {group.roles.map((role) => (
+        <RoleRow key={role.role} group={role} />
+      ))}
+    </div>
+  );
+}
+
+/** Per-component token group (`--ui-button-*`, …) — flat grid, grouped by name. */
+function ComponentGroup({ group }: { group: TokenGroup }) {
+  return (
+    <div>
+      <h3
+        style={{
+          fontSize: 12,
+          textTransform: 'uppercase',
+          letterSpacing: 0.5,
+          opacity: 0.6,
+          marginBottom: 10,
+        }}
+      >
+        {group.tier} <span style={{ fontWeight: 400 }}>({group.tokens.length})</span>
+      </h3>
+      <div style={cardGrid}>
         {group.tokens.map((token) => (
           <TokenCard key={token.name} name={token.name} />
         ))}
@@ -119,20 +194,22 @@ export function ColorsSection() {
       <p style={{ fontSize: 13, color: 'var(--ui-text-on-surface-secondary)' }}>
         Generated <code>--ui-*</code> tokens from{' '}
         <code>@acronis-platform/tokens-pd</code>. Values reflect the active brand
-        and light/dark scheme.
+        and light/dark scheme. Semantic colors are grouped by{' '}
+        <strong>context</strong> (the surface/intent a color lives on), then by{' '}
+        <strong>role</strong> (background, text, border, glyph) within.
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-        <h3 style={{ fontSize: 14, fontWeight: 600 }}>Semantic tokens</h3>
-        {semanticGroups.map((group) => (
-          <Group key={group.tier} group={group} />
+        <h3 style={{ fontSize: 14, fontWeight: 600 }}>Semantic colors</h3>
+        {semanticContextGroups.map((group) => (
+          <ContextSection key={group.context} group={group} />
         ))}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         <h3 style={{ fontSize: 14, fontWeight: 600 }}>Component tokens</h3>
         {componentGroups.map((group) => (
-          <Group key={group.tier} group={group} />
+          <ComponentGroup key={group.tier} group={group} />
         ))}
       </div>
     </div>
