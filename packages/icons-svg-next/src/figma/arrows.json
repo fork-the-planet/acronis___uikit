@@ -30,7 +30,9 @@
   "arrow-uturn",
   "arrows-circle",
   "arrows-loop",
+  "arrows-maximize",
   "arrows-move",
+  "arrows-resize",
   "chevron-down",
   "chevron-first",
   "chevron-last",
@@ -40,7 +42,5 @@
   "chevrons-left",
   "chevrons-right",
   "handle-grip",
-  "handle-resize",
-  "router--24",
-  "router--24-duplicate"
+  "handle-resize"
 ]
