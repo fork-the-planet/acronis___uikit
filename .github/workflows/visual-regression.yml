@@ -6,6 +6,17 @@ on: [pull_request]
 jobs:
   visual-regression:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: ui-legacy
+            filter: '@acronis-platform/shadcn-uikit'
+            dir: packages/ui-legacy
+          - name: ui-react
+            filter: '@acronis-platform/ui-react'
+            dir: packages/ui-react
+    name: visual-regression (${{ matrix.name }})
     steps:
       - uses: actions/checkout@v6
 
@@ -39,22 +50,22 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            packages/ui-legacy/node_modules/.vite
-            packages/ui-legacy/node_modules/.cache/storybook
-          key: storybook-${{ runner.os }}-${{ hashFiles('packages/ui-legacy/src/**', 'packages/ui-legacy/.storybook/**', 'packages/ui-legacy/package.json') }}
-          restore-keys: storybook-${{ runner.os }}-
+            ${{ matrix.dir }}/node_modules/.vite
+            ${{ matrix.dir }}/node_modules/.cache/storybook
+          key: storybook-${{ matrix.name }}-${{ runner.os }}-${{ hashFiles(format('{0}/src/**', matrix.dir), format('{0}/.storybook/**', matrix.dir), format('{0}/package.json', matrix.dir)) }}
+          restore-keys: storybook-${{ matrix.name }}-${{ runner.os }}-
 
       - name: Build Storybook
-        run: pnpm --filter @acronis-platform/shadcn-uikit storybook:build
+        run: pnpm --filter ${{ matrix.filter }} storybook:build
 
       # Docker only serves the pre-built static output and runs Playwright.
       # --build rebuilds the image when Dockerfile or .storybook config changes.
       - name: Run visual regression tests
-        run: docker compose -f packages/ui-legacy/docker-compose.storybook.yml up --build --abort-on-container-exit --exit-code-from test-runner
+        run: docker compose -f ${{ matrix.dir }}/docker-compose.storybook.yml up --build --abort-on-container-exit --exit-code-from test-runner
 
       - name: Upload diff artifacts on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: visual-regression-diffs
-          path: packages/ui-legacy/test/__snapshots__/__diff_output__/
+          name: visual-regression-diffs-${{ matrix.name }}
+          path: ${{ matrix.dir }}/test/__snapshots__/__diff_output__/
