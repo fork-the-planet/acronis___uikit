@@ -2,9 +2,8 @@
 
 `@acronis-platform/design-tokens` — a **published** data-only workspace:
 DTCG-2025.10-conformant design-token JSON. The files under
-`tiers/` are the source of truth; they're synced from Figma by
-[`context/figma-sync.md`](context/figma-sync.md). Consumes the vendored
-DTCG-2025-10 spec snapshot under `context/DTCG-2025-10/`.
+`tiers/` are the source of truth. Consumes the vendored DTCG-2025-10 spec
+snapshot under `context/DTCG-2025-10/`.
 
 Repo-wide rules (TypeScript, file naming, Conventional Commits,
 Changesets) live in the repo root's [`../../context/`](../../context/)
@@ -18,7 +17,7 @@ This is the only script that does real work. From the repo root:
 
 ```bash
 pnpm --filter @acronis-platform/design-tokens test       # alias for validate
-pnpm --filter @acronis-platform/design-tokens validate    # ajv-compiles the schema, validates the three token files
+pnpm --filter @acronis-platform/design-tokens validate    # ajv-compiles the schema, validates the tier files
 ```
 
 `--strict=false` is required for the tokens schema — a known ajv quirk from the `properties`/`patternProperties` overlap on `$extensions`. It is already baked into the `validate` script; keep it.
@@ -26,15 +25,6 @@ pnpm --filter @acronis-platform/design-tokens validate    # ajv-compiles the sch
 `build` / `dev` / `clean` / `lint` / `typecheck` are intentional no-ops
 — there is nothing to compile in a JSON data package. `test` runs the
 ajv validation so `pnpm -r test` covers this workspace in CI.
-
-## Bootstrap: `.tmp/figma-tokens/` may be absent
-
-`.tmp/scripts/` (the Figma pull/post-process generators) is committed; `.tmp/figma-tokens/` holds local Figma snapshots that are **not** committed and won't be present in a fresh clone, so any helper script that reads from it will fail until you pull them. If you need that data and it isn't there:
-
-1. `mkdir -p .tmp/figma-tokens` (run from this package directory).
-2. Pull the snapshot via the **Figma Console MCP** server (`figma-console` in [`.mcp.json`](./.mcp.json) in this package; launch Claude from `packages/design-tokens/` so it loads) — never hand-author the snapshot contents.
-3. Expected files and exact pull procedure: [`context/figma-sync.md`](context/figma-sync.md).
-4. If the MCP server is unavailable, stop and ask the user — do not fabricate snapshot data. The JSON under `tiers/` is the source of truth and may be edited, but don't hand-patch it to stand in for a Figma snapshot you couldn't fetch.
 
 ## Loading context
 
@@ -44,14 +34,12 @@ When a new file lands under `context/`, add a row here in the same change. An un
 
 ### Context — hand-authored
 
-| When the task involves…                                                                                                                                          | Load                                                     |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| Grounding vocabulary (Tier, Group, Mode, Theme, Brand, Collection, token)                                                                                        | [`context/glossary.md`](context/glossary.md)             |
-| Writing/reading a `.tokens.json` — the files, token shape (`$value`/`$type`/`values`/`platforms`/`$extensions`), modes & themes, the alias chain, platform scope | [`context/manifest.md`](context/manifest.md)             |
-| DTCG conformance & divergence, the `$schema`/Figma discriminator, `$extensions` namespaces (`com.acronis.*`/`com.figma.*`), naming / `$`-prefix / `$type` rules  | [`context/spec.md`](context/spec.md)                     |
-| Pulling from Figma — the mapping, the pull/post-process workflow, the generators under `.tmp/scripts/`                                                           | [`context/figma-sync.md`](context/figma-sync.md)         |
-| The brand set — which brands exist, what each overrides, light/dark per brand, and how the data-driven brand discovery works                                     | [`context/brand-matrix.md`](context/brand-matrix.md)     |
-| Versioning a token change — the public contract surface, what counts as a breaking change, and how a `design-tokens` bump maps to `tokens-pd` + consumers        | [`context/token-contract.md`](context/token-contract.md) |
+| When the task involves…                                                                                                                                          | Load                                             |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| Grounding vocabulary (Tier, Group, Mode, Theme, Brand, Collection, token)                                                                                        | [`context/glossary.md`](context/glossary.md)     |
+| Writing/reading a `.tokens.json` — the files, token shape (`$value`/`$type`/`values`/`platforms`/`$extensions`), modes & themes, the alias chain, platform scope | [`context/manifest.md`](context/manifest.md)     |
+| DTCG conformance & divergence, the `$schema`/Figma discriminator, `$extensions` namespaces (`com.acronis.*`/`com.figma.*`), naming / `$`-prefix / `$type` rules  | [`context/spec.md`](context/spec.md)             |
+| Sizing a token change — whether a change is a major / minor / patch bump, and how to record it                                                                   | [`context/versioning.md`](context/versioning.md) |
 
 ### DTCG 2025.10 spec — vendored snapshot
 

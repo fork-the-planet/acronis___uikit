@@ -13,8 +13,9 @@ import { buildThemeExtend, routeColor } from '../../tailwind';
 
 // ── normalizeTree (stage 1) ──────────────────────────────────────────────────
 
-// A fixture in the Acronis source shape: per-mode `values`, a `com.acronis.units`
-// dimension, a `$value` composite, and a token scoped to a different platform.
+// A fixture in the Acronis source shape: per-mode `values`, a native DTCG
+// dimension `$value` { value, unit }, plain fontWeight/fontFamily scalar
+// `$value`s, a `$value` composite, and a token scoped to a different platform.
 const SOURCE = {
   $type: 'color',
   colors: {
@@ -33,7 +34,23 @@ const SOURCE = {
     sm: {
       $type: 'dimension',
       platforms: ['PD'],
-      $extensions: { 'com.acronis.units': { unit: 'px', value: 8 } },
+      $value: { value: 8, unit: 'px' },
+    },
+  },
+  font: {
+    weight: {
+      bold: {
+        $type: 'fontWeight',
+        platforms: ['PD'],
+        $value: 700,
+      },
+    },
+    family: {
+      default: {
+        $type: 'fontFamily',
+        platforms: ['PD'],
+        $value: 'Inter',
+      },
     },
   },
   typography: {
@@ -75,10 +92,16 @@ describe('normalizeTree', () => {
     expect(Object.keys(background)).toEqual(['base']);
   });
 
-  it('reorders `com.acronis.units` into the DTCG `{ value, unit }` shape', () => {
+  it('passes a native dimension `$value` { value, unit } through untouched', () => {
     const sm = at(normalizeTree(SOURCE, 'light', 'PD'), 'spacing', 'sm');
     expect(sm.$type).toBe('dimension');
     expect(sm.$value).toEqual({ value: 8, unit: 'px' });
+  });
+
+  it('passes plain fontWeight (number) and fontFamily (string) scalars through untouched', () => {
+    const tree = normalizeTree(SOURCE, 'light', 'PD');
+    expect(at(tree, 'font', 'weight', 'bold').$value).toBe(700);
+    expect(at(tree, 'font', 'family', 'default').$value).toBe('Inter');
   });
 
   it('keeps a mode-invariant `$value` composite untouched', () => {
@@ -106,7 +129,7 @@ const token = (over: Partial<TransformedToken>): TransformedToken =>
 
 const render = (tokens: TransformedToken[], darkTokens = new Map<string, string>()): string => {
   const { vars, classes } = collectDecls(tokens, darkTokens);
-  return serializeCss({ brand: 'acronis', tier: 'semantic', isOverride: false, vars, classes });
+  return serializeCss({ brand: 'acronis', tier: 'semantics', isOverride: false, vars, classes });
 };
 
 describe('collectDecls', () => {
@@ -166,7 +189,7 @@ describe('serializeCss', () => {
   it('includes the light/dark shell in base files', () => {
     const css = serializeCss({
       brand: 'acronis',
-      tier: 'semantic',
+      tier: 'semantics',
       isOverride: false,
       vars: new Map([['ui-x', 'red']]),
       classes: new Map(),
@@ -178,7 +201,7 @@ describe('serializeCss', () => {
   it('targets both :root and :host so tokens resolve in shadow roots', () => {
     const base = serializeCss({
       brand: 'acronis',
-      tier: 'semantic',
+      tier: 'semantics',
       isOverride: false,
       vars: new Map([['ui-x', 'red']]),
       classes: new Map(),
@@ -189,7 +212,7 @@ describe('serializeCss', () => {
 
     const override = serializeCss({
       brand: 'brand-b',
-      tier: 'semantic',
+      tier: 'semantics',
       isOverride: true,
       vars: new Map([['ui-x', 'blue']]),
       classes: new Map(),
@@ -200,7 +223,7 @@ describe('serializeCss', () => {
   it('omits the shell from override files', () => {
     const css = serializeCss({
       brand: 'brand-b',
-      tier: 'semantic',
+      tier: 'semantics',
       isOverride: true,
       vars: new Map([['ui-x', 'blue']]),
       classes: new Map(),
@@ -241,31 +264,41 @@ describe('routeColor', () => {
     });
   });
 
-  it('drops the role word from a component path (button.primary.background.idle)', () => {
-    expect(routeColor(['button', 'primary', 'background', 'idle'])).toEqual({
-      namespace: 'backgroundColor',
-      key: 'button-primary-idle',
+  it('routes the gradients root to backgroundImage', () => {
+    expect(routeColor(['gradients', 'ai', 'idle'])).toEqual({
+      namespace: 'backgroundImage',
+      key: 'ai-idle',
     });
   });
 
-  it('uses the role segment closest to the leaf when multiple role-like words exist', () => {
-    expect(routeColor(['button', 'icon', 'background', 'idle'])).toEqual({
+  it('routes a component container.color to backgroundColor, keeping the part word', () => {
+    expect(routeColor(['button', 'primary', 'container', 'color', 'idle'])).toEqual({
       namespace: 'backgroundColor',
-      key: 'button-icon-idle',
+      key: 'button-primary-container-idle',
     });
   });
 
-  it('normalizes leading underscores in key segments', () => {
-    expect(routeColor(['tree', '_global', 'background', 'selected'])).toEqual({
-      namespace: 'backgroundColor',
-      key: 'tree-global-selected',
+  it('uses the role segment closest to the leaf (borderColor beats container)', () => {
+    // Figma segments are camelCase (`borderColor`); routeColor matches the role
+    // map by the verbatim segment, and `normalizeSegment` kebab-cases it for the
+    // emitted key. The deeper `borderColor` wins over the outer `container`.
+    expect(routeColor(['button', 'secondary', 'container', 'borderColor', 'idle'])).toEqual({
+      namespace: 'borderColor',
+      key: 'button-secondary-container-border-color-idle',
     });
   });
 
-  it('keeps a descriptive role word in the key (switch.circle.on → backgroundColor)', () => {
-    expect(routeColor(['switch', 'circle', 'on'])).toEqual({
-      namespace: 'backgroundColor',
-      key: 'switch-circle-on',
+  it('normalizes leading underscores and drops the `color` wrapper', () => {
+    expect(routeColor(['button', '_global', 'icon', 'color', 'idle'])).toEqual({
+      namespace: 'fill',
+      key: 'button-global-icon-idle',
+    });
+  });
+
+  it('routes a component label.color to textColor', () => {
+    expect(routeColor(['button', 'primary', 'label', 'color', 'idle'])).toEqual({
+      namespace: 'textColor',
+      key: 'button-primary-label-idle',
     });
   });
 
@@ -299,8 +332,8 @@ describe('buildThemeExtend', () => {
     const theme = buildThemeExtend(
       [
         tok({
-          name: 'ui-background-ai-idle',
-          path: ['colors', 'background', 'ai', 'idle'],
+          name: 'ui-gradients-ai-idle',
+          path: ['gradients', 'ai', 'idle'],
           $type: 'gradient',
           $value: 'linear-gradient(180deg, rgb(0 0 0) 20%, rgb(255 0 255) 100%)',
         }),

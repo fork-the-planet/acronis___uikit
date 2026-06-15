@@ -17,12 +17,13 @@ import {
   tailwindDir,
   tailwindTokensPreset,
 } from './platforms';
-import { BRANDS, resolveColorMap, resolveTokens } from './tokens';
+import { BRANDS, resolveColorMap, resolveTokens, semanticRoots, tailwindRoleMap } from './tokens';
 
-// Partition tokens by tier: the shared semantic vocabulary (colors + typography)
-// → one base `tokens` preset; every other first path segment is a component →
-// its own preset. Mirrors the css build's semantic/component split.
-const SEMANTIC_ROOTS = new Set(['colors', 'typography']);
+// Partition tokens by tier: the shared semantic vocabulary (colors + gradients +
+// typography) → one base `tokens` preset; every other first path segment is a
+// component → its own preset. Mirrors the css build's semantics/component split,
+// reusing the same data-driven root set so the two partitions can't drift.
+const SEMANTIC_ROOTS = semanticRoots();
 const sliceOf = (token: TransformedToken): string =>
   SEMANTIC_ROOTS.has(token.path[0]) ? 'tokens' : token.path[0];
 
@@ -59,67 +60,78 @@ const emptyTheme = (): ThemeExtend => ({
 
 const stripUi = (name: string): string => name.replace(/^ui-/, '');
 
-// ── Color → Tailwind namespace routing ───────────────────────────────────────
-// Acronis colors encode their role in the token path (`background`, `text`,
-// `border`, `glyph` icons, `focus` rings). Tailwind's model is that the theme
-// key names the utility, so we route each color into the role-specific namespace
-// and drop the role word from the key: `colors.background.surface.primary` →
-// `backgroundColor: { 'surface-primary' }` → `bg-surface-primary`. Icons paint
-// via `fill`/`stroke` (`currentColor`), so `glyph` → `fill` (which also keeps it
-// from colliding with `text` keys that share leaf names like `on-surface-primary`).
-type ColorNamespace = 'backgroundColor' | 'textColor' | 'borderColor' | 'fill' | 'ringColor';
+// ── Color / gradient → Tailwind namespace routing ────────────────────────────
+// Acronis tokens encode their role in the path (semantic: `background`, `text`,
+// `border`, `glyph`, `focus`, `gradients`; component: `container`, `icon`,
+// `label`, `border-color`, …). The role → Tailwind-namespace map is NOT hardcoded
+// here — it is authored in the source tiers as `com.acronis.tailwindRoles` and read
+// via `tailwindRoleMap()`. Tailwind's model is that the theme key names the utility,
+// so we route each token into its role-specific namespace and drop the role word
+// from the key: `colors.background.surface.primary` → `backgroundColor:
+// { 'surface-primary' }` → `bg-surface-primary`; `gradients.ai.idle` →
+// `backgroundImage: { 'ai-idle' }`.
+type ColorNamespace =
+  | 'backgroundColor'
+  | 'textColor'
+  | 'borderColor'
+  | 'fill'
+  | 'ringColor'
+  | 'backgroundImage';
 
-// Semantic tier: the segment right after `colors` is the role.
-const SEMANTIC_ROLE: Record<string, ColorNamespace> = {
-  background: 'backgroundColor',
-  text: 'textColor',
-  border: 'borderColor',
-  glyph: 'fill',
-  focus: 'ringColor',
-};
+// Tier-scoped role maps: a semantic token routes against the semantic roles only;
+// a component token against the merged map (so it can reuse semantic role words and
+// add its own). This keeps a component element name that collides with a semantic
+// *token segment* (e.g. the input `error` message vs the semantic `error` focus
+// variant) from shadowing semantic routing.
+const SEMANTIC_ROLE_MAP = tailwindRoleMap(['semantics']);
+const COMPONENT_ROLE_MAP = tailwindRoleMap();
 
-// Component tier: a role word somewhere in the path. PURE roles set the namespace
-// and are dropped from the key; DESC(riptive) roles set the namespace but stay in
-// the key (a switch `circle`, a breadcrumb `chevron` are meaningful descriptors).
-const PURE_ROLE: Record<string, ColorNamespace> = {
-  background: 'backgroundColor',
-  border: 'borderColor',
-  'border-color': 'borderColor',
-  text: 'textColor',
-  label: 'textColor',
-  color: 'textColor',
-  icon: 'fill',
-  glyph: 'fill',
-};
-const DESC_ROLE: Record<string, ColorNamespace> = {
-  circle: 'backgroundColor',
-  divider: 'borderColor',
-  chevron: 'fill',
-  link: 'textColor',
-  value: 'textColor',
-  title: 'textColor',
-};
+// The semantic tier prefixes color paths with `colors`, and component color tokens
+// wrap their value in a `color` group (`…container.color.idle`); neither carries
+// meaning in the utility key. Semantic roles are *pure* — the role word is redundant
+// with the namespace, so it (and the `colors` prefix) is dropped, giving clean keys
+// like `surface-primary`. Component parts (`container`, `breadcrumb-label`, …) are
+// *descriptive* — they disambiguate sibling tokens (a collapsed `breadcrumb-label`
+// vs `label-current-page`), so they stay in the key.
+const TIER_PREFIX = 'colors';
+const WRAPPER_SEGMENT = 'color';
 
-const normalizeSegment = (segment: string): string => segment.replace(/^_+/, '');
-const normalizePath = (segments: string[]): string[] => segments.map(normalizeSegment);
+// Strip leading underscores (_global → global) and convert PascalCase/camelCase
+// to kebab-case (Breadcrumb → breadcrumb, borderColor → border-color) so Tailwind
+// utility keys follow industry-standard lowercase-kebab naming regardless of how
+// segments are cased in Figma / the tiers.
+const normalizeSegment = (segment: string): string =>
+  segment
+    .replace(/^_+/, '')
+    .replace(/([A-Z])/g, m => `-${m.toLowerCase()}`)
+    .replace(/^-/, '');
 
-/** Map a color token's path to its Tailwind namespace + key (no `ui-`, no role word). */
+/**
+ * Map a token's path to its Tailwind namespace + key (no `ui-`, no `color` wrapper),
+ * driven by the authored `com.acronis.tailwindRoles` map (tier-scoped — semantic
+ * tokens route against the semantic roles only, component tokens against the merged
+ * map). The deepest path segment present in the map wins (so a `border-color` under a
+ * `container` routes to the border namespace, not the container's). The matched role
+ * word is dropped only for the semantic tier (pure roles); component parts are kept.
+ * Throws if no segment is mapped, so an unrouted color/gradient token fails the build
+ * loudly.
+ */
 export function routeColor(path: string[]): { namespace: ColorNamespace; key: string } {
-  if (path[0] === 'colors' && SEMANTIC_ROLE[path[1]]) {
-    return {
-      namespace: SEMANTIC_ROLE[path[1]],
-      key: normalizePath(path.slice(2)).join('-'),
-    };
-  }
-  for (let i = path.length - 1; i >= 1; i--) {
-    if (PURE_ROLE[path[i]]) {
-      return {
-        namespace: PURE_ROLE[path[i]],
-        key: normalizePath(path.filter((_, j) => j !== i)).join('-'),
-      };
-    }
-    if (DESC_ROLE[path[i]]) {
-      return { namespace: DESC_ROLE[path[i]], key: normalizePath(path).join('-') };
+  const isSemantic = SEMANTIC_ROOTS.has(path[0]);
+  const roleMap = isSemantic ? SEMANTIC_ROLE_MAP : COMPONENT_ROLE_MAP;
+  for (let i = path.length - 1; i >= 0; i--) {
+    const namespace = roleMap.get(path[i]);
+    if (namespace) {
+      const key = path
+        .filter((seg, j) => {
+          if (seg === WRAPPER_SEGMENT) return false;
+          if (isSemantic && j === i) return false;
+          if (isSemantic && j === 0 && seg === TIER_PREFIX) return false;
+          return true;
+        })
+        .map(normalizeSegment)
+        .join('-');
+      return { namespace: namespace as ColorNamespace, key };
     }
   }
   throw new Error(`Cannot route color token to a Tailwind namespace: ${path.join('.')}`);
@@ -170,9 +182,10 @@ export function buildThemeExtend(
       put(theme[namespace], key, `light-dark(${value}, ${dark})`, token.path);
     } else if (token.$type === 'gradient') {
       if (value === null) continue;
-      // Gradients can't be a `*-color` (those set a solid paint); Tailwind's
-      // gradient namespace is `backgroundImage` (→ `bg-*` setting background-image).
-      put(theme.backgroundImage, routeColor(token.path).key, value, token.path);
+      // Gradients route via the same authored map to `backgroundImage` (→ `bg-*`
+      // setting background-image), not a solid `*-color` paint.
+      const { namespace, key } = routeColor(token.path);
+      put(theme[namespace], key, value, token.path);
     } else if (token.$type === 'typography') {
       if (value !== null) addTypography(theme, stripUi(token.name), value);
     } else if (token.$type === 'dimension') {

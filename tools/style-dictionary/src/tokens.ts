@@ -34,7 +34,7 @@ import {
   type Filter,
   type PlatformKey,
   rel,
-  semanticFile,
+  semanticsFile,
 } from './platforms';
 
 // ── Sources ──────────────────────────────────────────────────────────────────
@@ -45,7 +45,7 @@ type TokenTree = Record<string, unknown>;
 /** The three source token files, addressed via the package's `exports`. */
 const TOKEN_SOURCES = {
   primitives: '@acronis-platform/design-tokens/tiers/primitives.json',
-  semantic: '@acronis-platform/design-tokens/tiers/semantic.json',
+  semantics: '@acronis-platform/design-tokens/tiers/semantics.json',
   components: '@acronis-platform/design-tokens/tiers/components.json',
 } as const;
 
@@ -55,6 +55,49 @@ type TokenSourceName = keyof typeof TOKEN_SOURCES;
 function readTokenSource(name: TokenSourceName): TokenTree {
   const url = import.meta.resolve(TOKEN_SOURCES[name]);
   return JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as TokenTree;
+}
+
+/**
+ * The semantic-tier roots — the non-`$` top-level keys of `semantics.json`
+ * (`colors`, `gradients`, `typography`). Derived from the data so a new semantic
+ * root needs no code change. A token whose first path segment is in this set
+ * belongs to the semantics tier (one root CSS file / the base Tailwind preset);
+ * everything else is a component tier (its own dir / preset). Shared by the css
+ * and tailwind builds so the two partitions can't drift.
+ */
+export function semanticRoots(): Set<string> {
+  return new Set(
+    Object.keys(readTokenSource('semantics')).filter((key) => !key.startsWith('$'))
+  );
+}
+
+/**
+ * The role → Tailwind-namespace routing map, read from the source tiers'
+ * root-level `com.acronis.tailwindRoles` extension (a build-time hint, not token
+ * data). Keyed by a path segment (a semantic role like `background`, a component
+ * part like `container`, or the `gradients` root); the value is the Tailwind
+ * theme namespace the build routes that token into.
+ *
+ * Tier-scoped: pass `['semantics']` for the map a *semantic* token routes against
+ * and the default (both tiers) for the map a *component* token routes against.
+ * The split lets a component element reuse a name that exists as a *semantic token
+ * segment* (e.g. the input `error` message vs the semantic `error` focus variant)
+ * without the component entry shadowing semantic routing — semantic tokens never
+ * see the component entries. Later tiers win on key conflicts within a single map.
+ */
+export function tailwindRoleMap(
+  tiers: readonly TokenSourceName[] = ['semantics', 'components']
+): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const tier of tiers) {
+    const ext = readTokenSource(tier)['$extensions'] as
+      | Record<string, Record<string, string>>
+      | undefined;
+    const roles = ext?.['com.acronis.tailwindRoles'];
+    if (roles)
+      for (const [segment, namespace] of Object.entries(roles)) map.set(segment, namespace);
+  }
+  return map;
 }
 
 // ── Shared design data ─────────────────────────────────────────────────────────
@@ -79,7 +122,7 @@ interface DtcgView {
  * Tiers whose tokens carry the Brand axis — their `values` dicts are keyed by
  * brand. (The primitives tier is keyed by theme: light/dark, not by brand.)
  */
-const BRAND_TIERS: TokenSourceName[] = ['semantic', 'components'];
+const BRAND_TIERS: TokenSourceName[] = ['semantics', 'components'];
 
 /** Collect the key set of every `values` dict in a token tree. */
 export function collectValueKeys(node: unknown, into: Set<string>): void {
@@ -99,10 +142,9 @@ export function collectValueKeys(node: unknown, into: Set<string>): void {
 /**
  * Discover the brand set from the token data — the union of `values` keys across
  * the brand-bearing tiers (semantic + components). `DEFAULT_BRAND` is emitted in
- * full and listed first; the rest are alphabetical. This is the data-driven
- * brand matrix: adding a brand mode in `@acronis-platform/design-tokens` adds a
- * brand here (and a generated `<brand>.css`) with **no code change**. See
- * `packages/design-tokens/context/brand-matrix.md`.
+ * full and listed first; the rest are alphabetical. The brand set is
+ * data-driven: adding a brand mode in `@acronis-platform/design-tokens` adds a
+ * brand here (and a generated `<brand>.css`) with **no code change**.
  */
 export function discoverBrands(): string[] {
   const keys = new Set<string>();
@@ -122,7 +164,7 @@ const VIEWS: DtcgView[] = [
   { out: 'primitives-light', source: 'primitives', mode: 'light' },
   { out: 'primitives-dark', source: 'primitives', mode: 'dark' },
   ...BRAND_NAMES.flatMap((brand): DtcgView[] => [
-    { out: `semantic-${brand}`, source: 'semantic', mode: brand },
+    { out: `semantics-${brand}`, source: 'semantics', mode: brand },
     { out: `components-${brand}`, source: 'components', mode: brand },
   ]),
 ];
@@ -134,13 +176,13 @@ const VIEWS: DtcgView[] = [
  */
 export interface Brand {
   name: string;
-  semantic: string;
+  semantics: string;
   components: string;
 }
 
 export const BRANDS: Brand[] = BRAND_NAMES.map((name) => ({
   name,
-  semantic: `semantic-${name}`,
+  semantics: `semantics-${name}`,
   components: `components-${name}`,
 }));
 
@@ -160,6 +202,23 @@ const makeSd = (config: Config): StyleDictionary =>
     ...config,
   });
 
+// Recursively sort object keys alphabetically (ASCII code-unit order), with
+// all-numeric keys ordered numerically so "8" precedes "12". Arrays keep their
+// order. Mirrors the tiers' ordering rule so the emitted DTCG is alphabetical too.
+const sortKeysDeep = (value: unknown): unknown => {
+  if (Array.isArray(value)) return value.map(sortKeysDeep);
+  if (value === null || typeof value !== 'object') return value;
+  const entries = Object.keys(value as Record<string, unknown>).sort((a, b) => {
+    const na = /^\d+$/.test(a);
+    const nb = /^\d+$/.test(b);
+    if (na && nb) return Number(a) - Number(b);
+    return a < b ? -1 : a > b ? 1 : 0;
+  });
+  const out: Record<string, unknown> = {};
+  for (const k of entries) out[k] = sortKeysDeep((value as Record<string, unknown>)[k]);
+  return out;
+};
+
 // ── Stage 1: dtcg ──────────────────────────────────────────────────────────────
 
 export function buildDtcg(filter: Filter): void {
@@ -177,7 +236,7 @@ export function buildDtcg(filter: Filter): void {
   for (const view of VIEWS) {
     const tree = normalizeTree(sources[view.source], view.mode, FILTER_ENUM[filter]);
     const dest = path.join(outDir, `${view.out}.json`);
-    writeFileSync(dest, `${JSON.stringify(tree, null, 2)}\n`);
+    writeFileSync(dest, `${JSON.stringify(sortKeysDeep(tree), null, 2)}\n`);
     console.log(`✓ ${rel(dest)}`);
   }
 }
@@ -190,7 +249,7 @@ const readView = (name: string): Config['tokens'] =>
 /** Merge a brand's semantic + component views with one theme of the primitives. */
 const mergeViews = (brand: Brand, theme: Theme): Config['tokens'] => ({
   ...readView(`primitives-${theme}`),
-  ...readView(brand.semantic),
+  ...readView(brand.semantics),
   ...readView(brand.components),
 });
 
@@ -227,13 +286,14 @@ export async function resolveColorMap(
   );
 }
 
-// The semantic tier (one root file per brand) vs the component tier (one dir per
-// component). Tokens partition by their first path segment.
-const SEMANTIC_ROOTS = new Set(['colors', 'typography']);
+// The semantics tier (one root file per brand) vs the component tier (one dir per
+// component). Tokens partition by their first path segment; the semantic roots are
+// data-driven (see `semanticRoots`), so a new root (e.g. `gradients`) needs no edit.
+const SEMANTIC_ROOTS = semanticRoots();
 const sliceOf = (token: TransformedToken): string =>
-  SEMANTIC_ROOTS.has(token.path[0]) ? 'semantic' : token.path[0];
+  SEMANTIC_ROOTS.has(token.path[0]) ? 'semantics' : token.path[0];
 const sliceFile = (slice: string, brand: string): string =>
-  slice === 'semantic' ? semanticFile(brand) : componentFile(slice, brand);
+  slice === 'semantics' ? semanticsFile(brand) : componentFile(slice, brand);
 
 const emptyDecls = (): Decls => ({ vars: new Map(), classes: new Map(), skipped: [] });
 
