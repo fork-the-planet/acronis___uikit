@@ -154,6 +154,27 @@ describe('iconPacksStrategy', () => {
     expect(icons).toEqual([{ id: 'i1', name: 'lock', pageName: 'solid-mono/nested' }]);
   });
 
+  it('collects very deep icon trees without recursion overflow', () => {
+    let nested: FigmaNode = icon('deep', '_assetsource/Database');
+    for (let i = 0; i < 15_000; i += 1) {
+      nested = { id: `f-${i}`, name: `Frame ${i}`, type: 'FRAME', children: [nested] };
+    }
+
+    const icons = iconPacksStrategy(
+      sectionOf([
+        {
+          id: 'p1',
+          name: 'solid-mono',
+          type: 'FRAME',
+          children: [{ id: 'cat1', name: 'Category', type: 'FRAME', children: [title('Deep'), nested] }],
+        },
+      ]),
+      config,
+    );
+
+    expect(icons).toEqual([{ id: 'deep', name: 'database', pageName: 'solid-mono/deep' }]);
+  });
+
   it('ignores components without the _assetsource/ prefix and non-component noise', () => {
     const icons = iconPacksStrategy(
       sectionOf([
