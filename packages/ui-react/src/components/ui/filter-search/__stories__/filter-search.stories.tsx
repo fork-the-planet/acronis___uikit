@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { BuildingIcon } from '@acronis-platform/icons-react/stroke-mono';
 
 import { FilterSearch, FilterSearchActions } from '../filter-search';
-import { SearchBox } from '../../search/search';
+import { InputSearch as Search } from '../../input-search/input-search';
 import { ButtonMenu } from '../../button-menu/button-menu';
 import { Button } from '../../button/button';
 import {
@@ -48,7 +48,9 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: () => (
     <FilterSearch>
-      <SearchBox placeholder="Placeholder" aria-label="Search" className="w-56" />
+      <div className="w-56">
+        <Search placeholder="Placeholder" aria-label="Search" />
+      </div>
       <ButtonMenu variant="secondary">Table filters</ButtonMenu>
     </FilterSearch>
   ),
@@ -74,7 +76,9 @@ export const WithTenantSwitcher: Story = {
           <SelectItem value="globex">Globex Inc</SelectItem>
         </SelectContent>
       </Select>
-      <SearchBox placeholder="Placeholder" aria-label="Search" className="w-56" />
+      <div className="w-56">
+        <Search placeholder="Placeholder" aria-label="Search" />
+      </div>
       <ButtonMenu variant="secondary">Table filters</ButtonMenu>
     </FilterSearch>
   ),
@@ -94,7 +98,9 @@ export const WithButtons: Story = {
           <SelectItem value="globex">Globex Inc</SelectItem>
         </SelectContent>
       </Select>
-      <SearchBox placeholder="Placeholder" aria-label="Search" className="w-56" />
+      <div className="w-56">
+        <Search placeholder="Placeholder" aria-label="Search" />
+      </div>
       <ButtonMenu variant="secondary">Table filters</ButtonMenu>
       <FilterSearchActions>
         <ButtonMenu variant="secondary">Label</ButtonMenu>

@@ -15,6 +15,13 @@ in a single horizontal row.
 - **Form layouts** — use a form component, not a toolbar.
 - **Navigation bars** — use a dedicated nav component.
 
+## Related Components
+
+- **DataTableToolbar** — a differently-designed toolbar that is part of the
+  `DataTable` compound component. Use `FilterSearch` when you need a standalone
+  toolbar above any data table; use `DataTableToolbar` when working within the
+  `DataTable` composition.
+
 ## Parts
 
 | Part                  | Element | Role                                           |
