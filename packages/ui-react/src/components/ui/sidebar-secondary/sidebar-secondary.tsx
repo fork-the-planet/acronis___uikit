@@ -390,13 +390,9 @@ function SidebarSecondaryResizeEdge() {
             aria-label={ctx.resizeAriaLabel}
             className={cn(
               // 9px hit area matching ResizableHandle, absolutely positioned on inline-end edge.
+              // No after: divider — the sidebar's own border-e changes color via :has() on hover/active/focus.
               'absolute end-0 top-0 h-full w-[9px] ltr:translate-x-1/2 rtl:-translate-x-1/2 cursor-[var(--ui-resizable-cursor,ew-resize)] z-10',
-              // 1px centered divider — same idle/hover/active token chain as ResizableHandle.
-              'after:absolute after:inset-y-0 after:start-1/2 after:-translate-x-1/2 after:transition-colors',
-              'after:w-[var(--ui-resizable-border-width,1px)] after:bg-[var(--ui-border-on-surface-border)]',
-              'hover:after:bg-[var(--ui-resizable-border-color-hover)]',
-              'active:after:bg-[var(--ui-resizable-border-color-active)]',
-              'focus-visible:after:bg-[var(--ui-resizable-border-color-hover)] focus-visible:outline-none'
+              'focus-visible:outline-none'
             )}
             tabIndex={0}
             onKeyDown={handleKeyDown}
@@ -525,6 +521,8 @@ const SidebarSecondary = React.forwardRef<HTMLElement, SidebarSecondaryProps>(
           style: inlineStyle,
           className: cn(
             'group/sidebar relative flex h-full flex-col bg-[var(--ui-sidebar-secondary-global-container-color)] border-e border-[var(--ui-sidebar-secondary-global-container-border-color)] [border-inline-end-width:var(--ui-sidebar-secondary-global-container-border-width)] w-[var(--ui-sidebar-secondary-collapsed-container-width)] data-[state=expanded]:w-[var(--ui-sidebar-secondary-expanded-container-width)] transition-[width]',
+            resizableProp &&
+              'transition-[width,border-color] has-[[role=separator]:hover]:border-[var(--ui-resizable-border-color-hover)] has-[[role=separator]:active]:border-[var(--ui-resizable-border-color-active)] has-[[role=separator]:focus-visible]:border-[var(--ui-resizable-border-color-hover)] has-[[role=separator]:focus-visible]:ring-[3px] has-[[role=separator]:focus-visible]:ring-[var(--ui-focus-primary)]',
             className
           ),
           children: (
@@ -576,7 +574,7 @@ const SidebarSecondaryHeader = React.forwardRef<
       )}
       {...props}
     >
-      <h2 className="ui-sidebar-secondary-global-header-label-text-style truncate [unicode-bidi:plaintext] text-[var(--ui-sidebar-secondary-global-header-label-color)]">
+      <h2 className="ui-sidebar-secondary-global-header-label-text-style truncate text-[var(--ui-sidebar-secondary-global-header-label-color)]">
         {resolvedLabel}
       </h2>
     </div>
@@ -792,7 +790,7 @@ const SidebarSecondarySectionLabel = React.forwardRef<
         render={
           <span
             ref={labelRef}
-            className="min-w-0 flex-1 truncate [unicode-bidi:plaintext]"
+            className="min-w-0 flex-1 truncate"
           />
         }
       >
@@ -987,7 +985,7 @@ const SidebarSecondaryMenuItem = React.forwardRef<
                     <span
                       ref={labelRef}
                       className={cn(
-                        'flex-1 min-w-[60px] truncate text-start [unicode-bidi:plaintext]',
+                        'flex-1 min-w-[60px] truncate text-start',
                         !expanded && 'sr-only'
                       )}
                     />
@@ -1125,7 +1123,7 @@ const SidebarSecondaryCollapseTrigger = React.forwardRef<
             render={
               <span
                 ref={labelRef}
-                className={cn('flex-1 min-w-[60px] truncate [unicode-bidi:plaintext]', !expanded && 'sr-only')}
+                className={cn('flex-1 min-w-[60px] truncate', !expanded && 'sr-only')}
               />
             }
           >

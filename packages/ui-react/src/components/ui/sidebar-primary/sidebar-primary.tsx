@@ -401,7 +401,7 @@ const SidebarPrimaryMenuItem = React.forwardRef<
                     <span
                       ref={labelRef}
                       className={cn(
-                        'min-w-0 flex-1 truncate text-start [unicode-bidi:plaintext]',
+                        'min-w-0 flex-1 truncate text-start',
                         !expanded && 'sr-only'
                       )}
                     />
@@ -537,7 +537,7 @@ const SidebarPrimaryCollapseTrigger = React.forwardRef<
               <span
                 ref={labelRef}
                 className={cn(
-                  'min-w-0 flex-1 truncate [unicode-bidi:plaintext]',
+                  'min-w-0 flex-1 truncate',
                   !expanded && 'sr-only'
                 )}
               />
