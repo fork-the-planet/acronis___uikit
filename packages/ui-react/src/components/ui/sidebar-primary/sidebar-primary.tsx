@@ -181,26 +181,55 @@ const SidebarPrimary = React.forwardRef<HTMLElement, SidebarPrimaryProps>(
 );
 SidebarPrimary.displayName = 'SidebarPrimary';
 
+export interface SidebarPrimaryHeaderProps
+  extends React.ComponentPropsWithoutRef<'div'> {
+  /**
+   * Logo content shown while the rail is expanded (e.g. a full lockup).
+   * Pairs with `collapsedLogo` to swap distinct graphics per rail state
+   * instead of resizing one. When neither `logo` nor `collapsedLogo` is
+   * given, `children` renders in both states (the original single-slot
+   * behavior).
+   */
+  logo?: React.ReactNode;
+  /**
+   * Logo content shown while the rail is collapsed (e.g. a monogram mark).
+   * Falls back to `logo` when omitted.
+   */
+  collapsedLogo?: React.ReactNode;
+}
+
 const SidebarPrimaryHeader = React.forwardRef<
   HTMLDivElement,
-  React.ComponentPropsWithoutRef<'div'>
->(({ className, ...props }, ref) => (
+  SidebarPrimaryHeaderProps
+>(({ className, logo, collapsedLogo, children, ...props }, ref) => {
   // Hosts a consumer-provided logo (R7 — no Logo part is built). Padding and the
   // logo height switch on expanded/collapsed; `[&_*]:h-…` sizes whatever the
   // consumer slots in. The logo color token tints any `currentColor` mark.
-  <div
-    ref={ref}
-    className={cn(
-      'flex items-center shrink-0 text-[var(--ui-sidebar-primary-global-logo-color)]',
-      'px-[var(--ui-sidebar-primary-collapsed-container-header-padding-x)] py-[var(--ui-sidebar-primary-collapsed-container-header-padding-y)]',
-      '[&_:where(img,svg)]:h-[var(--ui-sidebar-primary-collapsed-logo-height)] [&_:where(img,svg)]:w-auto',
-      'group-data-[state=expanded]/sidebar:px-[var(--ui-sidebar-primary-expanded-container-header-padding-x)] group-data-[state=expanded]/sidebar:py-[var(--ui-sidebar-primary-expanded-container-header-padding-y)]',
-      'group-data-[state=expanded]/sidebar:[&_:where(img,svg)]:h-[var(--ui-sidebar-primary-expanded-logo-height)]',
-      className
-    )}
-    {...props}
-  />
-));
+  const { expanded } = useSidebarPrimaryContext();
+  const hasTwinLogos = logo != null || collapsedLogo != null;
+  const content = hasTwinLogos
+    ? expanded
+      ? (logo ?? collapsedLogo)
+      : (collapsedLogo ?? logo)
+    : children;
+
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        'flex items-center shrink-0 text-[var(--ui-sidebar-primary-global-logo-color)]',
+        'px-[var(--ui-sidebar-primary-collapsed-container-header-padding-x)] py-[var(--ui-sidebar-primary-collapsed-container-header-padding-y)]',
+        '[&_:where(img,svg)]:h-[var(--ui-sidebar-primary-collapsed-logo-height)] [&_:where(img,svg)]:w-auto',
+        'group-data-[state=expanded]/sidebar:px-[var(--ui-sidebar-primary-expanded-container-header-padding-x)] group-data-[state=expanded]/sidebar:py-[var(--ui-sidebar-primary-expanded-container-header-padding-y)]',
+        'group-data-[state=expanded]/sidebar:[&_:where(img,svg)]:h-[var(--ui-sidebar-primary-expanded-logo-height)]',
+        className
+      )}
+      {...props}
+    >
+      {content}
+    </div>
+  );
+});
 SidebarPrimaryHeader.displayName = 'SidebarPrimaryHeader';
 
 const SidebarPrimaryContent = React.forwardRef<

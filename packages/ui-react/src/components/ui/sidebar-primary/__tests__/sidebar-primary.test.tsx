@@ -207,6 +207,70 @@ describe('SidebarPrimary', () => {
     expect(nav).toHaveAttribute('data-state', 'collapsed');
   });
 
+  describe('SidebarPrimaryHeader logo/collapsedLogo', () => {
+    it('renders logo when expanded and collapsedLogo when collapsed', () => {
+      const { rerender } = render(
+        <SidebarPrimary expanded>
+          <SidebarPrimaryHeader
+            logo={<span data-testid="expanded-logo" />}
+            collapsedLogo={<span data-testid="collapsed-logo" />}
+          />
+        </SidebarPrimary>
+      );
+      expect(screen.getByTestId('expanded-logo')).toBeInTheDocument();
+      expect(screen.queryByTestId('collapsed-logo')).not.toBeInTheDocument();
+
+      rerender(
+        <SidebarPrimary expanded={false}>
+          <SidebarPrimaryHeader
+            logo={<span data-testid="expanded-logo" />}
+            collapsedLogo={<span data-testid="collapsed-logo" />}
+          />
+        </SidebarPrimary>
+      );
+      expect(screen.getByTestId('collapsed-logo')).toBeInTheDocument();
+      expect(screen.queryByTestId('expanded-logo')).not.toBeInTheDocument();
+    });
+
+    it('falls back to logo when collapsedLogo is omitted, and vice versa', () => {
+      const { rerender } = render(
+        <SidebarPrimary expanded={false}>
+          <SidebarPrimaryHeader logo={<span data-testid="only-logo" />} />
+        </SidebarPrimary>
+      );
+      expect(screen.getByTestId('only-logo')).toBeInTheDocument();
+
+      rerender(
+        <SidebarPrimary expanded>
+          <SidebarPrimaryHeader
+            collapsedLogo={<span data-testid="only-collapsed-logo" />}
+          />
+        </SidebarPrimary>
+      );
+      expect(screen.getByTestId('only-collapsed-logo')).toBeInTheDocument();
+    });
+
+    it('renders children in both states when neither logo nor collapsedLogo is given', () => {
+      const { rerender } = render(
+        <SidebarPrimary expanded>
+          <SidebarPrimaryHeader>
+            <span data-testid="single-logo" />
+          </SidebarPrimaryHeader>
+        </SidebarPrimary>
+      );
+      expect(screen.getByTestId('single-logo')).toBeInTheDocument();
+
+      rerender(
+        <SidebarPrimary expanded={false}>
+          <SidebarPrimaryHeader>
+            <span data-testid="single-logo" />
+          </SidebarPrimaryHeader>
+        </SidebarPrimary>
+      );
+      expect(screen.getByTestId('single-logo')).toBeInTheDocument();
+    });
+  });
+
   it('forwards refs to the underlying nav and anchor', () => {
     const navRef = createRef<HTMLElement>();
     const itemRef = createRef<HTMLAnchorElement>();

@@ -88,21 +88,29 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// The Acronis Cyber Platform brand lockup from the Figma primary example: the
-// Acronis A-mark (`AcronisIcon`, sized by the Header's logo-height token) + the
-// wordmark, which the rail hides when collapsed. Both inherit
-// `--ui-sidebar-primary-global-logo-color`, so the lockup adapts per brand/theme
-// exactly like the design.
+// The Acronis Cyber Platform brand lockup from the Figma "expanded" example
+// (node 2426-4909): the Acronis A-mark (`AcronisIcon`) + the wordmark. Both
+// inherit `--ui-sidebar-primary-global-logo-color`, so the lockup adapts per
+// brand/theme exactly like the design. Passed as `SidebarPrimaryHeader`'s
+// `logo` prop.
 function LogoMark() {
   return (
     <span className="flex items-center gap-2">
       <AcronisIcon aria-hidden="true" />
-      <span className="leading-[1.15] group-data-[state=collapsed]/sidebar:hidden">
+      <span className="leading-[1.15]">
         <span className="block text-base font-semibold">Acronis</span>
         <span className="block text-sm">Cyber Platform</span>
       </span>
     </span>
   );
+}
+
+// The Figma "collapsed" example (node 2463-50479): the bare A-mark, no
+// wordmark. Passed as `SidebarPrimaryHeader`'s `collapsedLogo` prop so the
+// rail swaps to a distinct graphic instead of resizing/hiding parts of the
+// expanded lockup.
+function LogoMarkCollapsed() {
+  return <AcronisIcon aria-hidden="true" />;
 }
 
 function Shell({
@@ -188,9 +196,7 @@ export const Default: Story = {
   render: () => (
     <Shell>
       <SidebarPrimary>
-        <SidebarPrimaryHeader>
-          <LogoMark />
-        </SidebarPrimaryHeader>
+        <SidebarPrimaryHeader logo={<LogoMark />} collapsedLogo={<LogoMarkCollapsed />} />
         <PrimaryNav />
         <FooterNav />
       </SidebarPrimary>
@@ -203,13 +209,39 @@ export const Collapsed: Story = {
   render: () => (
     <Shell>
       <SidebarPrimary expanded={false}>
-        <SidebarPrimaryHeader>
-          <LogoMark />
-        </SidebarPrimaryHeader>
+        <SidebarPrimaryHeader logo={<LogoMark />} collapsedLogo={<LogoMarkCollapsed />} />
         <PrimaryNav />
         <FooterNav />
       </SidebarPrimary>
     </Shell>
+  ),
+};
+
+// `Default`/`Collapsed` each show one rail state — this puts both side by
+// side so it's obvious in a single canvas that `logo` and `collapsedLogo`
+// render two independent nodes (the full lockup vs. the bare monogram), not
+// one node resized or hidden via CSS.
+export const HeaderLogoVsCollapsedLogo: Story = {
+  name: 'Header — logo vs collapsedLogo (side by side)',
+  render: () => (
+    <div style={{ display: 'flex', gap: 24 }}>
+      <Shell height={200}>
+        <SidebarPrimary expanded>
+          <SidebarPrimaryHeader
+            logo={<LogoMark />}
+            collapsedLogo={<LogoMarkCollapsed />}
+          />
+        </SidebarPrimary>
+      </Shell>
+      <Shell height={200}>
+        <SidebarPrimary expanded={false}>
+          <SidebarPrimaryHeader
+            logo={<LogoMark />}
+            collapsedLogo={<LogoMarkCollapsed />}
+          />
+        </SidebarPrimary>
+      </Shell>
+    </div>
   ),
 };
 
@@ -479,9 +511,7 @@ export const StickyFooter: Story = {
     // content is above/below them — no extra "sticky" wiring needed.
     <Shell height={280}>
       <SidebarPrimary>
-        <SidebarPrimaryHeader>
-          <LogoMark />
-        </SidebarPrimaryHeader>
+        <SidebarPrimaryHeader logo={<LogoMark />} collapsedLogo={<LogoMarkCollapsed />} />
         <PrimaryNav />
         <FooterNav />
       </SidebarPrimary>
@@ -498,9 +528,7 @@ function RawExtrasRail({ expanded }: { expanded?: boolean }) {
   return (
     <Shell>
       <SidebarPrimary expanded={expanded}>
-        <SidebarPrimaryHeader>
-          <LogoMark />
-        </SidebarPrimaryHeader>
+        <SidebarPrimaryHeader logo={<LogoMark />} collapsedLogo={<LogoMarkCollapsed />} />
         <SidebarPrimaryContent>
           <SidebarPrimarySection>
             <SidebarPrimaryMenu>
@@ -557,9 +585,7 @@ export const Controlled: Story = {
     return (
       <Shell>
         <SidebarPrimary expanded={expanded} onExpandedChange={setExpanded}>
-          <SidebarPrimaryHeader>
-            <LogoMark />
-          </SidebarPrimaryHeader>
+          <SidebarPrimaryHeader logo={<LogoMark />} collapsedLogo={<LogoMarkCollapsed />} />
           <SidebarPrimaryContent>
             <SidebarPrimarySection>
               <SidebarPrimaryMenu>

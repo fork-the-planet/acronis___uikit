@@ -74,6 +74,23 @@ contract:
       required: false
       default: undefined
       description: Tag content for the extras `tag` / `tag-externalLink` variants.
+    - name: logo
+      type: ReactNode
+      required: false
+      default: undefined
+      description: >-
+        Header content shown while the rail is expanded (e.g. a full brand
+        lockup). Pairs with `collapsed-logo` to swap distinct graphics per
+        rail state instead of resizing one. React: the `logo` prop on
+        `SidebarPrimaryHeader`.
+    - name: collapsed-logo
+      type: ReactNode
+      required: false
+      default: undefined
+      description: >-
+        Header content shown while the rail is collapsed (e.g. a monogram
+        mark). Falls back to `logo` when omitted. React: the `collapsedLogo`
+        prop on `SidebarPrimaryHeader`.
 
   events:
     - name: expanded-change
@@ -102,9 +119,7 @@ adapters:
       '@acronis-platform/ui-react'
     example: |
       <SidebarPrimary expanded={expanded} onExpandedChange={setExpanded}>
-        <SidebarPrimaryHeader>
-          <ProductLogo />
-        </SidebarPrimaryHeader>
+        <SidebarPrimaryHeader logo={<ProductLogo />} collapsedLogo={<ProductMark />} />
         <SidebarPrimaryContent>
           <SidebarPrimarySection>
             <SidebarPrimaryMenu>

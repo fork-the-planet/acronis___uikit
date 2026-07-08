@@ -37,7 +37,11 @@ parts:
   - id: header
     description: >-
       Logo slot (`<div>`). Padding and logo height switch on expanded /
-      collapsed. The product logo is a consumer-provided child, not a built part.
+      collapsed. The product logo is consumer-provided content, not a built
+      part — either a single `children` node (resized/hidden per state via
+      CSS) or two independently-controlled `logo` / `collapsed-logo` slots
+      that swap distinct graphics (e.g. a full lockup vs. a monogram) per
+      rail state.
     element: div
   - id: content
     description: >-
