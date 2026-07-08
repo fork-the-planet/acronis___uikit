@@ -7,6 +7,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 import { ScrollArea } from '../scroll-area';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../tooltip';
 
 // Composable SidebarPrimary primitives mirroring the Figma "SidebarPrimary"
 // component set (node 2092:4359, variant expanded|collapsed). Every color and
@@ -70,6 +71,36 @@ function useControllableBoolean(
     [isControlled, onChange]
   );
   return [value, setValue];
+}
+
+/**
+ * Tracks whether `ref`'s element is clipping its own content (`scrollWidth >
+ * clientWidth`) — used to gate a tooltip so it only opens when a truncated
+ * label is actually cut off. Re-measures via `ResizeObserver` (covers the
+ * rail's expand/collapse width transition); `enabled` skips measurement
+ * entirely (e.g. while collapsed, where the label is `sr-only`).
+ */
+function useIsOverflowing<T extends Element>(
+  ref: React.RefObject<T | null>,
+  { enabled }: { enabled: boolean }
+): boolean {
+  const [isOverflowing, setIsOverflowing] = React.useState(false);
+
+  React.useEffect(() => {
+    const element = ref.current;
+    if (!enabled || !element) {
+      setIsOverflowing(false);
+      return;
+    }
+    const measure = () =>
+      setIsOverflowing(element.scrollWidth > element.clientWidth);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [ref, enabled]);
+
+  return isOverflowing;
 }
 
 export interface SidebarPrimaryProps
@@ -150,26 +181,55 @@ const SidebarPrimary = React.forwardRef<HTMLElement, SidebarPrimaryProps>(
 );
 SidebarPrimary.displayName = 'SidebarPrimary';
 
+export interface SidebarPrimaryHeaderProps
+  extends React.ComponentPropsWithoutRef<'div'> {
+  /**
+   * Logo content shown while the rail is expanded (e.g. a full lockup).
+   * Pairs with `collapsedLogo` to swap distinct graphics per rail state
+   * instead of resizing one. When neither `logo` nor `collapsedLogo` is
+   * given, `children` renders in both states (the original single-slot
+   * behavior).
+   */
+  logo?: React.ReactNode;
+  /**
+   * Logo content shown while the rail is collapsed (e.g. a monogram mark).
+   * Falls back to `logo` when omitted.
+   */
+  collapsedLogo?: React.ReactNode;
+}
+
 const SidebarPrimaryHeader = React.forwardRef<
   HTMLDivElement,
-  React.ComponentPropsWithoutRef<'div'>
->(({ className, ...props }, ref) => (
+  SidebarPrimaryHeaderProps
+>(({ className, logo, collapsedLogo, children, ...props }, ref) => {
   // Hosts a consumer-provided logo (R7 — no Logo part is built). Padding and the
   // logo height switch on expanded/collapsed; `[&_*]:h-…` sizes whatever the
   // consumer slots in. The logo color token tints any `currentColor` mark.
-  <div
-    ref={ref}
-    className={cn(
-      'flex items-center shrink-0 text-[var(--ui-sidebar-primary-global-logo-color)]',
-      'px-[var(--ui-sidebar-primary-collapsed-container-header-padding-x)] py-[var(--ui-sidebar-primary-collapsed-container-header-padding-y)]',
-      '[&_:where(img,svg)]:h-[var(--ui-sidebar-primary-collapsed-logo-height)] [&_:where(img,svg)]:w-auto',
-      'group-data-[state=expanded]/sidebar:px-[var(--ui-sidebar-primary-expanded-container-header-padding-x)] group-data-[state=expanded]/sidebar:py-[var(--ui-sidebar-primary-expanded-container-header-padding-y)]',
-      'group-data-[state=expanded]/sidebar:[&_:where(img,svg)]:h-[var(--ui-sidebar-primary-expanded-logo-height)]',
-      className
-    )}
-    {...props}
-  />
-));
+  const { expanded } = useSidebarPrimaryContext();
+  const hasTwinLogos = logo != null || collapsedLogo != null;
+  const content = hasTwinLogos
+    ? expanded
+      ? (logo ?? collapsedLogo)
+      : (collapsedLogo ?? logo)
+    : children;
+
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        'flex items-center shrink-0 text-[var(--ui-sidebar-primary-global-logo-color)]',
+        'px-[var(--ui-sidebar-primary-collapsed-container-header-padding-x)] py-[var(--ui-sidebar-primary-collapsed-container-header-padding-y)]',
+        '[&_:where(img,svg)]:h-[var(--ui-sidebar-primary-collapsed-logo-height)] [&_:where(img,svg)]:w-auto',
+        'group-data-[state=expanded]/sidebar:px-[var(--ui-sidebar-primary-expanded-container-header-padding-x)] group-data-[state=expanded]/sidebar:py-[var(--ui-sidebar-primary-expanded-container-header-padding-y)]',
+        'group-data-[state=expanded]/sidebar:[&_:where(img,svg)]:h-[var(--ui-sidebar-primary-expanded-logo-height)]',
+        className
+      )}
+      {...props}
+    >
+      {content}
+    </div>
+  );
+});
 SidebarPrimaryHeader.displayName = 'SidebarPrimaryHeader';
 
 const SidebarPrimaryContent = React.forwardRef<
@@ -179,7 +239,21 @@ const SidebarPrimaryContent = React.forwardRef<
   // The section list scrolls inside a ScrollArea: its overlay scrollbar floats
   // over the content and reserves no gutter, so the full-bleed selected row is
   // never cropped — on every OS, unlike a native `overflow` scrollbar.
-  <ScrollArea ref={ref} className={cn('min-h-0 flex-1', className)} {...props}>
+  //
+  // Base UI's Scroll Area Content sets `min-width: fit-content` inline (it
+  // needs the content's true intrinsic width to detect horizontal overflow),
+  // which forces every row wider than the rail — overriding `min-w-0` +
+  // `truncate` on a long label, since intrinsic-width calculations ignore
+  // `text-overflow`. We only ever scroll vertically here, so cancel it: the
+  // `!` (important) is required to beat the inline style's specificity.
+  <ScrollArea
+    ref={ref}
+    className={cn(
+      'min-h-0 flex-1 [&_[data-slot=scroll-area-content]]:min-w-0!',
+      className
+    )}
+    {...props}
+  >
     <div className="flex flex-col gap-[var(--ui-sidebar-primary-global-section-list-gap)]">
       {children}
     </div>
@@ -191,12 +265,11 @@ const SidebarPrimaryFooter = React.forwardRef<
   HTMLDivElement,
   React.ComponentPropsWithoutRef<'div'>
 >(({ className, ...props }, ref) => (
-  <div
+    <div
     ref={ref}
     className={cn(
       'flex flex-col shrink-0 gap-[var(--ui-sidebar-primary-global-footer-list-gap)]',
       'border-t border-[var(--ui-sidebar-primary-global-container-footer-border-color)] [border-top-width:var(--ui-sidebar-primary-global-container-footer-border-width)]',
-      'py-[var(--ui-sidebar-primary-section-container-padding-y)]',
       className
     )}
     {...props}
@@ -208,13 +281,12 @@ const SidebarPrimarySection = React.forwardRef<
   HTMLDivElement,
   React.ComponentPropsWithoutRef<'div'>
 >(({ className, ...props }, ref) => (
-  // `firstSection` in Figma only toggles the top divider — derive it from DOM
   // position (`:not(:first-child)`) instead of a prop.
   <div
     ref={ref}
     className={cn(
-      'flex flex-col py-[var(--ui-sidebar-primary-section-container-padding-y)]',
-      '[&:not(:first-child)]:border-t [&:not(:first-child)]:border-[var(--ui-sidebar-primary-section-container-border-color)] [&:not(:first-child)]:[border-top-width:var(--ui-sidebar-primary-section-container-border-width)]',
+      'flex flex-col pb-[var(--ui-sidebar-primary-section-container-padding-y)]',
+      '[&:not(:first-child)]:border-t [&:not(:first-child)]:border-[var(--ui-sidebar-primary-section-container-border-color)] [&:not(:first-child)]:[border-top-width:var(--ui-sidebar-primary-section-container-border-width)] [&:not(:first-child)]:pt-[var(--ui-sidebar-primary-section-container-padding-y)]',
       className
     )}
     {...props}
@@ -269,6 +341,15 @@ export interface SidebarPrimaryMenuItemProps
   icon?: React.ReactNode;
   children?: React.ReactNode;
   /**
+   * Trailing affordance — a `SidebarPrimaryMenuItemExtras` element. Rendered as
+   * a flex sibling of the label (its own `gap` from `_global/container/gap`),
+   * not nested inside the label's truncating span — nesting it there collapses
+   * the row gap and lets `truncate` clip the affordance. Hidden in collapsed/rail
+   * mode regardless of node type — the parent wraps it, so this holds even for
+   * a raw node rather than `SidebarPrimaryMenuItemExtras`.
+   */
+  extras?: React.ReactNode;
+  /**
    * Replace the rendered `<a>` with another element or component (e.g. a router
    * `Link` or a `<button>`) via Base UI composition.
    */
@@ -278,68 +359,71 @@ export interface SidebarPrimaryMenuItemProps
 const SidebarPrimaryMenuItem = React.forwardRef<
   HTMLAnchorElement,
   SidebarPrimaryMenuItemProps
->(({ className, selected = false, icon, render, children, ...props }, ref) => {
-  const { expanded } = useSidebarPrimaryContext();
+>(
+  (
+    { className, selected = false, icon, render, children, extras, ...props },
+    ref
+  ) => {
+    const { expanded } = useSidebarPrimaryContext();
+    const labelRef = React.useRef<HTMLSpanElement>(null);
+    const isOverflowing = useIsOverflowing(labelRef, { enabled: expanded });
 
-  // Trailing extras (tag / shortcut / external link) are passed as children but
-  // belong at the right edge of the row — split them out so the title takes the
-  // remaining width and truncates with an ellipsis, while the extras stay
-  // `shrink-0` on the right (the row's `gap` is their left margin).
-  const items = React.Children.toArray(children);
-  const extras = items.filter(
-    (child): child is React.ReactElement =>
-      React.isValidElement(child) &&
-      (child.type as { displayName?: string }).displayName ===
-        'SidebarPrimaryMenuItemExtras'
-  );
-  const label = items.filter(
-    (child) => !extras.includes(child as React.ReactElement)
-  );
-
-  const inner = useRender({
-    render,
-    ref,
-    defaultTagName: 'a',
-    props: mergeProps<'a'>(
-      {
-        className: cn(
-          sidebarPrimaryMenuItemVariants({
-            variant: selected ? 'selected' : 'unselected',
-          }),
-          className
-        ),
-        'aria-current': selected ? 'page' : undefined,
-        children: (
-          <>
-            {icon != null && (
-              <span className="flex shrink-0 items-center self-start mt-[var(--ui-sidebar-primary-menu-item-global-icon-margin-t)]">
-                {icon}
-              </span>
-            )}
-            {/* Keep the label in the DOM in collapsed/rail mode as `sr-only` so
-                the icon-only row keeps an accessible name (a11y §7) — never
-                `display:none` the text. Extras are visually dropped when
-                collapsed but stay queryable for the same reason. */}
-            <span
-              className={cn(
-                'min-w-0 flex-1 truncate text-left',
-                !expanded && 'sr-only'
+    const inner = useRender({
+      render,
+      ref,
+      defaultTagName: 'a',
+      props: mergeProps<'a'>(
+        {
+          className: cn(
+            sidebarPrimaryMenuItemVariants({
+              variant: selected ? 'selected' : 'unselected',
+            }),
+            className
+          ),
+          'aria-current': selected ? 'page' : undefined,
+          children: (
+            <>
+              {icon != null && (
+                <span className="flex shrink-0 items-center self-start mt-[var(--ui-sidebar-primary-menu-item-global-icon-margin-t)]">
+                  {icon}
+                </span>
               )}
-            >
-              {label}
-            </span>
-            {extras.length > 0 && (
-              <span className="flex shrink-0 items-center">{extras}</span>
-            )}
-          </>
-        ),
-      },
-      props
-    ),
-  });
+              {/* Keep the label in the DOM in collapsed/rail mode as `sr-only` so
+                  the icon-only row keeps an accessible name (a11y §7) — never
+                  `display:none` the text. Extras are visually dropped when
+                  collapsed but stay queryable for the same reason. The tooltip
+                  trigger is the label span itself, not the row — it must not
+                  open when hovering the icon or extras, and only ever opens
+                  when the label is actually clipped. */}
+              <Tooltip disabled={!isOverflowing}>
+                <TooltipTrigger
+                  render={
+                    <span
+                      ref={labelRef}
+                      className={cn(
+                        'min-w-0 flex-1 truncate text-left',
+                        !expanded && 'sr-only'
+                      )}
+                    />
+                  }
+                >
+                  {children}
+                </TooltipTrigger>
+                <TooltipContent>{children}</TooltipContent>
+              </Tooltip>
+              {extras != null && (
+                <span className={cn(!expanded && 'hidden')}>{extras}</span>
+              )}
+            </>
+          ),
+        },
+        props
+      ),
+    });
 
-  return <li className="contents">{inner}</li>;
-});
+    return <li className="contents">{inner}</li>;
+  }
+);
 SidebarPrimaryMenuItem.displayName = 'SidebarPrimaryMenuItem';
 
 export interface SidebarPrimaryMenuItemExtrasProps
@@ -348,7 +432,12 @@ export interface SidebarPrimaryMenuItemExtrasProps
   variant: 'tag' | 'externalLink' | 'shortcut' | 'tag-externalLink';
   /** Shortcut text (e.g. "⌘H") for the `shortcut` variant. */
   shortcut?: string;
-  /** Tag content for the `tag` / `tag-externalLink` variants. */
+  /**
+   * Tag content for the `tag` / `tag-externalLink` variants. Figma constrains
+   * this slot's `Tag` instance to `size="sm"` (no other size is offered on
+   * MenuItemExtras) — always pass a `<Tag variant="info" size="sm">`, never the
+   * default size.
+   */
   tag?: React.ReactNode;
 }
 
@@ -395,6 +484,12 @@ export interface SidebarPrimaryCollapseTriggerProps
   /** Leading 16px icon (e.g. a panel-left glyph). */
   icon?: React.ReactNode;
   children?: React.ReactNode;
+  /**
+   * Trailing affordance — a `SidebarPrimaryMenuItemExtras` element (Figma
+   * shows a `⌘H` shortcut here). Rendered as a flex sibling of the label, same
+   * as `SidebarPrimaryMenuItem`'s `extras` prop.
+   */
+  extras?: React.ReactNode;
 }
 
 // The footer "Collapse menu" affordance (Figma). A menu-item-styled `<button>`
@@ -404,8 +499,10 @@ export interface SidebarPrimaryCollapseTriggerProps
 const SidebarPrimaryCollapseTrigger = React.forwardRef<
   HTMLButtonElement,
   SidebarPrimaryCollapseTriggerProps
->(({ className, icon, children, onClick, ...props }, ref) => {
+>(({ className, icon, children, extras, onClick, ...props }, ref) => {
   const { expanded, toggleExpanded } = useSidebarPrimaryContext();
+  const labelRef = React.useRef<HTMLSpanElement>(null);
+  const isOverflowing = useIsOverflowing(labelRef, { enabled: expanded });
 
   return (
     <li className="contents">
@@ -425,13 +522,34 @@ const SidebarPrimaryCollapseTrigger = React.forwardRef<
         {...props}
       >
         {icon != null && (
-          <span className="flex shrink-0 items-center self-start mt-[var(--ui-sidebar-primary-menu-item-global-icon-margin-t)]">
+          <span
+            className={cn(
+              'flex shrink-0 items-center self-start mt-[var(--ui-sidebar-primary-menu-item-global-icon-margin-t)] transition-transform',
+              !expanded && 'rotate-180'
+            )}
+          >
             {icon}
           </span>
         )}
-        <span className={cn('flex-1 truncate', !expanded && 'sr-only')}>
-          {children}
-        </span>
+        <Tooltip disabled={!isOverflowing}>
+          <TooltipTrigger
+            render={
+              <span
+                ref={labelRef}
+                className={cn(
+                  'min-w-0 flex-1 truncate',
+                  !expanded && 'sr-only'
+                )}
+              />
+            }
+          >
+            {children}
+          </TooltipTrigger>
+          <TooltipContent>{children}</TooltipContent>
+        </Tooltip>
+        {extras != null && (
+          <span className={cn(!expanded && 'hidden')}>{extras}</span>
+        )}
       </button>
     </li>
   );
@@ -448,5 +566,6 @@ export {
   SidebarPrimaryMenuItem,
   SidebarPrimaryMenuItemExtras,
   SidebarPrimaryCollapseTrigger,
+  useIsOverflowing,
   sidebarPrimaryMenuItemVariants,
 };

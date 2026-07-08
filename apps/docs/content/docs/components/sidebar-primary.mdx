@@ -41,7 +41,7 @@ A full rail:
 
 ```tsx
 <SidebarPrimary>
-  <SidebarPrimaryHeader>{/* logo / product switcher */}</SidebarPrimaryHeader>
+  <SidebarPrimaryHeader logo={<ProductLogo />} collapsedLogo={<ProductMark />} />
   <SidebarPrimaryContent>
     <SidebarPrimarySection>
       <SidebarPrimaryMenu>
@@ -92,6 +92,17 @@ const [expanded, setExpanded] = React.useState(true);
   name="SidebarPrimaryProps"
 />
 
+### SidebarPrimaryHeader
+
+`logo` and `collapsedLogo` let you swap distinct graphics per rail state (e.g.
+a full lockup vs. a monogram) instead of resizing/hiding one node. When
+neither is given, `children` renders in both states.
+
+<AutoTypeTable
+  path="../../packages/ui-react/src/components/ui/sidebar-primary/sidebar-primary.tsx"
+  name="SidebarPrimaryHeaderProps"
+/>
+
 ### SidebarPrimaryMenuItem
 
 <AutoTypeTable
@@ -113,6 +124,6 @@ const [expanded, setExpanded] = React.useState(true);
   name="SidebarPrimaryCollapseTriggerProps"
 />
 
-The structural parts (`SidebarPrimaryHeader`, `SidebarPrimaryContent`,
-`SidebarPrimaryFooter`, `SidebarPrimarySection`, `SidebarPrimaryMenu`) accept the
-standard attributes of the element they render.
+The other structural parts (`SidebarPrimaryContent`, `SidebarPrimaryFooter`,
+`SidebarPrimarySection`, `SidebarPrimaryMenu`) accept the standard attributes
+of the element they render.

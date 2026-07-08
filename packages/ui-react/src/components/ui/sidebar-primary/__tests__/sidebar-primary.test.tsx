@@ -1,8 +1,9 @@
-import { createRef } from 'react';
-import { render, screen, within } from '@testing-library/react';
+import { createRef, useRef } from 'react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { TooltipProvider } from '../../tooltip';
 import {
   SidebarPrimary,
   SidebarPrimaryCollapseTrigger,
@@ -13,7 +14,44 @@ import {
   SidebarPrimaryMenuItem,
   SidebarPrimaryMenuItemExtras,
   SidebarPrimarySection,
+  useIsOverflowing,
 } from '../sidebar-primary';
+
+// happy-dom's layout metrics are always 0, so `useIsOverflowing`'s
+// `scrollWidth > clientWidth` check never trips on its own — mock the
+// prototype getters to simulate a clipped (or not) label.
+function mockOverflow(overflowing: boolean) {
+  vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(
+    overflowing ? 200 : 100
+  );
+  vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(100);
+}
+
+// A controllable stand-in for `ResizeObserver` — happy-dom's real
+// implementation never fires without genuine layout changes, so this lets
+// tests trigger a "resize" deterministically via `trigger()`.
+class FakeResizeObserver {
+  static instances: FakeResizeObserver[] = [];
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+  private callback: ResizeObserverCallback;
+
+  constructor(callback: ResizeObserverCallback) {
+    this.callback = callback;
+    FakeResizeObserver.instances.push(this);
+  }
+
+  trigger() {
+    this.callback([], this as unknown as ResizeObserver);
+  }
+}
+
+function OverflowProbe({ enabled }: { enabled: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isOverflowing = useIsOverflowing(ref, { enabled });
+  return <div ref={ref}>{isOverflowing ? 'overflowing' : 'not-overflowing'}</div>;
+}
 
 function Rail(props: React.ComponentProps<typeof SidebarPrimary>) {
   return (
@@ -45,6 +83,10 @@ function Rail(props: React.ComponentProps<typeof SidebarPrimary>) {
 }
 
 describe('SidebarPrimary', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('renders the composed rail without error', () => {
     render(<Rail />);
     expect(
@@ -165,6 +207,70 @@ describe('SidebarPrimary', () => {
     expect(nav).toHaveAttribute('data-state', 'collapsed');
   });
 
+  describe('SidebarPrimaryHeader logo/collapsedLogo', () => {
+    it('renders logo when expanded and collapsedLogo when collapsed', () => {
+      const { rerender } = render(
+        <SidebarPrimary expanded>
+          <SidebarPrimaryHeader
+            logo={<span data-testid="expanded-logo" />}
+            collapsedLogo={<span data-testid="collapsed-logo" />}
+          />
+        </SidebarPrimary>
+      );
+      expect(screen.getByTestId('expanded-logo')).toBeInTheDocument();
+      expect(screen.queryByTestId('collapsed-logo')).not.toBeInTheDocument();
+
+      rerender(
+        <SidebarPrimary expanded={false}>
+          <SidebarPrimaryHeader
+            logo={<span data-testid="expanded-logo" />}
+            collapsedLogo={<span data-testid="collapsed-logo" />}
+          />
+        </SidebarPrimary>
+      );
+      expect(screen.getByTestId('collapsed-logo')).toBeInTheDocument();
+      expect(screen.queryByTestId('expanded-logo')).not.toBeInTheDocument();
+    });
+
+    it('falls back to logo when collapsedLogo is omitted, and vice versa', () => {
+      const { rerender } = render(
+        <SidebarPrimary expanded={false}>
+          <SidebarPrimaryHeader logo={<span data-testid="only-logo" />} />
+        </SidebarPrimary>
+      );
+      expect(screen.getByTestId('only-logo')).toBeInTheDocument();
+
+      rerender(
+        <SidebarPrimary expanded>
+          <SidebarPrimaryHeader
+            collapsedLogo={<span data-testid="only-collapsed-logo" />}
+          />
+        </SidebarPrimary>
+      );
+      expect(screen.getByTestId('only-collapsed-logo')).toBeInTheDocument();
+    });
+
+    it('renders children in both states when neither logo nor collapsedLogo is given', () => {
+      const { rerender } = render(
+        <SidebarPrimary expanded>
+          <SidebarPrimaryHeader>
+            <span data-testid="single-logo" />
+          </SidebarPrimaryHeader>
+        </SidebarPrimary>
+      );
+      expect(screen.getByTestId('single-logo')).toBeInTheDocument();
+
+      rerender(
+        <SidebarPrimary expanded={false}>
+          <SidebarPrimaryHeader>
+            <span data-testid="single-logo" />
+          </SidebarPrimaryHeader>
+        </SidebarPrimary>
+      );
+      expect(screen.getByTestId('single-logo')).toBeInTheDocument();
+    });
+  });
+
   it('forwards refs to the underlying nav and anchor', () => {
     const navRef = createRef<HTMLElement>();
     const itemRef = createRef<HTMLAnchorElement>();
@@ -206,13 +312,19 @@ describe('SidebarPrimary', () => {
     render(
       <SidebarPrimary>
         <SidebarPrimaryMenu>
-          <SidebarPrimaryMenuItem href="/a">
+          <SidebarPrimaryMenuItem
+            href="/a"
+            extras={<SidebarPrimaryMenuItemExtras variant="externalLink" />}
+          >
             Inbox
-            <SidebarPrimaryMenuItemExtras variant="externalLink" />
           </SidebarPrimaryMenuItem>
-          <SidebarPrimaryMenuItem href="/b">
+          <SidebarPrimaryMenuItem
+            href="/b"
+            extras={
+              <SidebarPrimaryMenuItemExtras variant="shortcut" shortcut="⌘H" />
+            }
+          >
             Home
-            <SidebarPrimaryMenuItemExtras variant="shortcut" shortcut="⌘H" />
           </SidebarPrimaryMenuItem>
         </SidebarPrimaryMenu>
       </SidebarPrimary>
@@ -221,5 +333,243 @@ describe('SidebarPrimary', () => {
     expect(inbox.querySelector('svg')).toBeInTheDocument();
     const home = screen.getByRole('link', { name: /Home/ });
     expect(within(home).getByText('⌘H')).toBeInTheDocument();
+  });
+
+  it('renders extras as a sibling of the label, not nested inside its truncating span', () => {
+    render(
+      <SidebarPrimary>
+        <SidebarPrimaryMenu>
+          <SidebarPrimaryMenuItem
+            href="/a"
+            extras={<SidebarPrimaryMenuItemExtras variant="shortcut" shortcut="⌘H" />}
+          >
+            Home
+          </SidebarPrimaryMenuItem>
+        </SidebarPrimaryMenu>
+      </SidebarPrimary>
+    );
+    const link = screen.getByRole('link', { name: /Home/ });
+    const labelSpan = screen.getByText('Home');
+    // The shortcut text must NOT be inside the truncating label span — it's a
+    // flex sibling so it gets the row's gap instead of being crammed against
+    // the label text (see sidebar-primary.tsx SidebarPrimaryMenuItem `extras`).
+    expect(labelSpan).toHaveClass('truncate');
+    expect(within(labelSpan).queryByText('⌘H')).not.toBeInTheDocument();
+    expect(within(link).getByText('⌘H')).toBeInTheDocument();
+  });
+
+  it('hides a raw (non-SidebarPrimaryMenuItemExtras) extras node in collapsed/rail mode', () => {
+    render(
+      <SidebarPrimary expanded={false}>
+        <SidebarPrimaryMenu>
+          <SidebarPrimaryMenuItem href="/a" extras={<span>99+</span>}>
+            Inbox
+          </SidebarPrimaryMenuItem>
+        </SidebarPrimaryMenu>
+        <SidebarPrimaryFooter>
+          <SidebarPrimaryMenu>
+            <SidebarPrimaryCollapseTrigger extras={<span>99+</span>}>
+              Collapse menu
+            </SidebarPrimaryCollapseTrigger>
+          </SidebarPrimaryMenu>
+        </SidebarPrimaryFooter>
+      </SidebarPrimary>
+    );
+    const [itemExtras, triggerExtras] = screen.getAllByText('99+');
+    expect(itemExtras.parentElement).toHaveClass('hidden');
+    expect(triggerExtras.parentElement).toHaveClass('hidden');
+  });
+
+  it('gives the footer collapse trigger a shortcut extras slot as well', () => {
+    render(
+      <SidebarPrimary>
+        <SidebarPrimaryFooter>
+          <SidebarPrimaryMenu>
+            <SidebarPrimaryCollapseTrigger
+              extras={
+                <SidebarPrimaryMenuItemExtras variant="shortcut" shortcut="⌘H" />
+              }
+            >
+              Collapse menu
+            </SidebarPrimaryCollapseTrigger>
+          </SidebarPrimaryMenu>
+        </SidebarPrimaryFooter>
+      </SidebarPrimary>
+    );
+    const trigger = screen.getByRole('button', { name: /Collapse menu/ });
+    expect(within(trigger).getByText('⌘H')).toBeInTheDocument();
+  });
+
+  describe('truncation tooltip', () => {
+    it('keeps min-w-0 alongside truncate on the label so it actually clips in a flex row', () => {
+      render(
+        <SidebarPrimaryMenu>
+          <SidebarPrimaryMenuItem href="/a">
+            Protection management console
+          </SidebarPrimaryMenuItem>
+        </SidebarPrimaryMenu>
+      );
+      expect(screen.getByText('Protection management console')).toHaveClass(
+        'min-w-0',
+        'truncate'
+      );
+    });
+
+    it('does not open the tooltip when the label is not clipped', async () => {
+      mockOverflow(false);
+      render(
+        <TooltipProvider delay={0}>
+          <SidebarPrimaryMenu>
+            <SidebarPrimaryMenuItem href="/a">Assets</SidebarPrimaryMenuItem>
+          </SidebarPrimaryMenu>
+        </TooltipProvider>
+      );
+      await userEvent.hover(screen.getByText('Assets'));
+      expect(screen.getAllByText('Assets')).toHaveLength(1);
+    });
+
+    it('opens a tooltip with the full label when it is clipped', async () => {
+      mockOverflow(true);
+      render(
+        <TooltipProvider delay={0}>
+          <SidebarPrimaryMenu>
+            <SidebarPrimaryMenuItem href="/a">
+              Protection management console
+            </SidebarPrimaryMenuItem>
+          </SidebarPrimaryMenu>
+        </TooltipProvider>
+      );
+      await userEvent.hover(
+        screen.getByText('Protection management console')
+      );
+      expect(
+        await screen.findAllByText('Protection management console')
+      ).toHaveLength(2);
+    });
+
+    it('does not open the tooltip when hovering the icon or the extras, only the label', async () => {
+      mockOverflow(true);
+      render(
+        <TooltipProvider delay={0}>
+          <SidebarPrimaryMenu>
+            <SidebarPrimaryMenuItem
+              href="/a"
+              icon={<svg data-testid="icon" />}
+              extras={
+                <SidebarPrimaryMenuItemExtras
+                  variant="shortcut"
+                  shortcut="⌘H"
+                />
+              }
+            >
+              Protection management console
+            </SidebarPrimaryMenuItem>
+          </SidebarPrimaryMenu>
+        </TooltipProvider>
+      );
+      await userEvent.hover(screen.getByTestId('icon'));
+      await userEvent.hover(screen.getByText('⌘H'));
+      expect(
+        screen.getAllByText('Protection management console')
+      ).toHaveLength(1);
+    });
+
+    it('never opens the tooltip in collapsed/rail mode even if the (sr-only) label would measure as clipped', async () => {
+      mockOverflow(true);
+      render(
+        <TooltipProvider delay={0}>
+          <SidebarPrimary expanded={false}>
+            <SidebarPrimaryMenu>
+              <SidebarPrimaryMenuItem href="/a">
+                Protection management console
+              </SidebarPrimaryMenuItem>
+            </SidebarPrimaryMenu>
+          </SidebarPrimary>
+        </TooltipProvider>
+      );
+      await userEvent.hover(
+        screen.getByText('Protection management console')
+      );
+      expect(
+        screen.getAllByText('Protection management console')
+      ).toHaveLength(1);
+    });
+
+    it('applies the same clipped-only tooltip behavior to the collapse trigger label', async () => {
+      mockOverflow(true);
+      render(
+        <TooltipProvider delay={0}>
+          <SidebarPrimaryMenu>
+            <SidebarPrimaryCollapseTrigger>
+              Collapse this very long navigation menu
+            </SidebarPrimaryCollapseTrigger>
+          </SidebarPrimaryMenu>
+        </TooltipProvider>
+      );
+      await userEvent.hover(
+        screen.getByText('Collapse this very long navigation menu')
+      );
+      expect(
+        await screen.findAllByText('Collapse this very long navigation menu')
+      ).toHaveLength(2);
+    });
+  });
+});
+
+describe('useIsOverflowing', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    FakeResizeObserver.instances = [];
+  });
+
+  it('reports false when the element does not overflow', () => {
+    mockOverflow(false);
+    render(<OverflowProbe enabled />);
+    expect(screen.getByText('not-overflowing')).toBeInTheDocument();
+  });
+
+  it('reports true when the element overflows', () => {
+    mockOverflow(true);
+    render(<OverflowProbe enabled />);
+    expect(screen.getByText('overflowing')).toBeInTheDocument();
+  });
+
+  it('skips measuring while disabled, even if the element would overflow', () => {
+    mockOverflow(true);
+    render(<OverflowProbe enabled={false} />);
+    expect(screen.getByText('not-overflowing')).toBeInTheDocument();
+  });
+
+  it('starts measuring (and can flip to true) once re-enabled', () => {
+    mockOverflow(true);
+    const { rerender } = render(<OverflowProbe enabled={false} />);
+    expect(screen.getByText('not-overflowing')).toBeInTheDocument();
+
+    rerender(<OverflowProbe enabled />);
+    expect(screen.getByText('overflowing')).toBeInTheDocument();
+  });
+
+  it('re-measures via ResizeObserver when the observed element resizes', () => {
+    vi.stubGlobal('ResizeObserver', FakeResizeObserver);
+    mockOverflow(false);
+    render(<OverflowProbe enabled />);
+    expect(screen.getByText('not-overflowing')).toBeInTheDocument();
+
+    mockOverflow(true);
+    act(() => {
+      FakeResizeObserver.instances[0].trigger();
+    });
+    expect(screen.getByText('overflowing')).toBeInTheDocument();
+  });
+
+  it('disconnects the ResizeObserver on unmount', () => {
+    vi.stubGlobal('ResizeObserver', FakeResizeObserver);
+    mockOverflow(false);
+    const { unmount } = render(<OverflowProbe enabled />);
+    const observer = FakeResizeObserver.instances[0];
+
+    unmount();
+    expect(observer.disconnect).toHaveBeenCalledOnce();
   });
 });
