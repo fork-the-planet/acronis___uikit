@@ -48,9 +48,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: () => (
     <FilterSearch>
-      <div className="w-56">
-        <Search placeholder="Placeholder" aria-label="Search" />
-      </div>
+      <Search placeholder="Placeholder" aria-label="Search" className="w-56" />
       <ButtonMenu variant="secondary">Table filters</ButtonMenu>
     </FilterSearch>
   ),
@@ -76,9 +74,7 @@ export const WithTenantSwitcher: Story = {
           <SelectItem value="globex">Globex Inc</SelectItem>
         </SelectContent>
       </Select>
-      <div className="w-56">
-        <Search placeholder="Placeholder" aria-label="Search" />
-      </div>
+      <Search placeholder="Placeholder" aria-label="Search" className="w-56" />
       <ButtonMenu variant="secondary">Table filters</ButtonMenu>
     </FilterSearch>
   ),
@@ -98,9 +94,7 @@ export const WithButtons: Story = {
           <SelectItem value="globex">Globex Inc</SelectItem>
         </SelectContent>
       </Select>
-      <div className="w-56">
-        <Search placeholder="Placeholder" aria-label="Search" />
-      </div>
+      <Search placeholder="Placeholder" aria-label="Search" className="w-56" />
       <ButtonMenu variant="secondary">Table filters</ButtonMenu>
       <FilterSearchActions>
         <ButtonMenu variant="secondary">Label</ButtonMenu>

@@ -46,7 +46,7 @@ const InputSearch = React.forwardRef<HTMLInputElement, InputSearchProps>(
         : {};
 
     return (
-      <div className="flex w-full min-w-[var(--ui-input-search-container-width-min)] flex-col gap-[var(--ui-input-search-container-gap)]">
+      <div className={cn('flex w-full min-w-[var(--ui-input-search-container-width-min)] flex-col gap-[var(--ui-input-search-container-gap)]', className)}>
         {hasLabel && (
           <label
             htmlFor={inputId}
@@ -73,7 +73,6 @@ const InputSearch = React.forwardRef<HTMLInputElement, InputSearchProps>(
           id={inputId}
           disabled={disabled}
           aria-required={required || undefined}
-          className={className}
           {...ariaLabelProps}
           {...props}
         />

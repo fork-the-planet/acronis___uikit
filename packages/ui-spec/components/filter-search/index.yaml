@@ -8,13 +8,14 @@ description: >-
   filters button, optional tenant/scope switcher, and trailing action buttons
   in a single horizontal row. Pure layout — no dedicated token tier; child
   components (Search, ButtonMenu, Select) bring their own tokens.
-since: 0.26.0
+since: 0.55.0
 dependencies:
   components:
     - Search
     - ButtonMenu
     - Select
     - Button
+    - DataTableToolbar
 figma:
   node: '3897-7681'
   codeConnect: packages/ui-react/src/components/ui/filter-search/filter-search.figma.tsx
