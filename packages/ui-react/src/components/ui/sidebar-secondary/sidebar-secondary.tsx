@@ -356,6 +356,9 @@ function SidebarSecondaryResizeEdge() {
     if (e.key === growKey && exp) {
       e.preventDefault();
       sw(Math.min(w + step, maxWidth));
+    } else if (e.key === growKey && !exp) {
+      e.preventDefault();
+      te();
     } else if (e.key === shrinkKey && exp) {
       e.preventDefault();
       const next = w - step;
@@ -364,7 +367,7 @@ function SidebarSecondaryResizeEdge() {
       } else {
         sw(next);
       }
-    } else if (e.key === 'Enter') {
+    } else if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       te();
     } else if (e.key === 'Home') {
@@ -381,7 +384,7 @@ function SidebarSecondaryResizeEdge() {
   };
 
   return (
-    <Tooltip open={tooltipOpen} onOpenChange={handleTooltipOpenChange}>
+    <Tooltip open={tooltipOpen} onOpenChange={handleTooltipOpenChange} trackCursorAxis="y">
       <TooltipTrigger
         render={
           <div
@@ -389,10 +392,14 @@ function SidebarSecondaryResizeEdge() {
             aria-orientation="vertical"
             aria-label={ctx.resizeAriaLabel}
             className={cn(
-              // 9px hit area matching ResizableHandle, absolutely positioned on inline-end edge.
-              // No after: divider — the sidebar's own border-e changes color via :has() on hover/active/focus.
-              'absolute end-0 top-0 h-full w-[9px] ltr:translate-x-1/2 rtl:-translate-x-1/2 cursor-[var(--ui-resizable-cursor,ew-resize)] z-10',
-              'focus-visible:outline-none'
+              // 17px hit area, absolutely positioned on inline-end edge.
+              // The sidebar's own border-e provides the visible 1px line; its color
+              // changes via :has() on hover/active/focus-visible.
+              'absolute end-0 top-0 h-full w-[17px] ltr:translate-x-1/2 rtl:-translate-x-1/2 cursor-[var(--ui-resizable-cursor,ew-resize)] z-10',
+              // On focus: 1px active-color line (after pseudo, CSS border for pixel-snap) + 3px box-shadow ring centered on it.
+              'after:absolute after:inset-y-0 after:inset-x-0 after:mx-auto after:w-0 after:pointer-events-none',
+              'after:[border-inline-start-width:var(--ui-resizable-border-width,1px)] after:border-solid after:border-transparent',
+              'focus-visible:outline-none focus-visible:after:[border-inline-start-color:var(--ui-resizable-border-color-active)] focus-visible:after:[box-shadow:0_0_0_3px_var(--ui-focus-primary)]'
             )}
             tabIndex={0}
             onKeyDown={handleKeyDown}
@@ -522,7 +529,7 @@ const SidebarSecondary = React.forwardRef<HTMLElement, SidebarSecondaryProps>(
           className: cn(
             'group/sidebar relative flex h-full flex-col bg-[var(--ui-sidebar-secondary-global-container-color)] border-e border-[var(--ui-sidebar-secondary-global-container-border-color)] [border-inline-end-width:var(--ui-sidebar-secondary-global-container-border-width)] w-[var(--ui-sidebar-secondary-collapsed-container-width)] data-[state=expanded]:w-[var(--ui-sidebar-secondary-expanded-container-width)] transition-[width]',
             resizableProp &&
-              'transition-[width,border-color] has-[[role=separator]:hover]:border-[var(--ui-resizable-border-color-hover)] has-[[role=separator]:active]:border-[var(--ui-resizable-border-color-active)] has-[[role=separator]:focus-visible]:border-[var(--ui-resizable-border-color-hover)] has-[[role=separator]:focus-visible]:ring-[3px] has-[[role=separator]:focus-visible]:ring-[var(--ui-focus-primary)]',
+              'transition-[width,border-color] has-[[role=separator]:hover]:[border-inline-end-color:var(--ui-resizable-border-color-hover)] has-[[role=separator]:active]:[border-inline-end-color:var(--ui-resizable-border-color-active)] has-[[role=separator]:focus-visible]:[border-inline-end-color:var(--ui-resizable-border-color-active)]',
             className
           ),
           children: (
@@ -848,7 +855,7 @@ const SidebarSecondarySectionLabel = React.forwardRef<
     >
       <Collapsible.Trigger
         className={cn(
-          'group/section flex min-w-0 flex-1 items-center gap-[var(--ui-sidebar-secondary-section-container-header-gap)] text-start',
+          'group/section flex min-w-0 flex-1 items-center gap-[var(--ui-sidebar-secondary-section-container-header-gap)] text-start cursor-pointer',
           sectionLabelTextClass,
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-focus-brand)] focus-visible:ring-inset'
         )}
@@ -900,7 +907,7 @@ SidebarSecondaryMenu.displayName = 'SidebarSecondaryMenu';
 // value is unchanged (runtime var() references honor brand overrides only on the
 // referenced token).
 const sidebarSecondaryRowClasses =
-  'group/row flex w-full items-start gap-[var(--ui-sidebar-secondary-menu-item-global-container-gap)] min-h-[var(--ui-sidebar-secondary-menu-item-global-container-height-min)] px-[var(--ui-sidebar-secondary-menu-item-global-container-padding-x)] py-[var(--ui-sidebar-secondary-menu-item-global-container-padding-y)] no-underline ui-sidebar-secondary-menu-item-global-label-text-style transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-focus-brand)] focus-visible:ring-inset text-[var(--ui-sidebar-secondary-menu-item-global-label-color-color)] [&_svg]:shrink-0 [&_svg]:size-[var(--ui-sidebar-secondary-menu-item-global-icon-size)] [&_svg]:text-[var(--ui-sidebar-secondary-menu-item-global-icon-color-color)]';
+  'group/row flex w-full items-start gap-[var(--ui-sidebar-secondary-menu-item-global-container-gap)] min-h-[var(--ui-sidebar-secondary-menu-item-global-container-height-min)] px-[var(--ui-sidebar-secondary-menu-item-global-container-padding-x)] py-[var(--ui-sidebar-secondary-menu-item-global-container-padding-y)] no-underline ui-sidebar-secondary-menu-item-global-label-text-style transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ui-focus-brand)] focus-visible:ring-inset text-[var(--ui-sidebar-secondary-menu-item-global-label-color-color)] [&_svg]:shrink-0 [&_svg]:size-[var(--ui-sidebar-secondary-menu-item-global-icon-size)] [&_svg]:text-[var(--ui-sidebar-secondary-menu-item-global-icon-color-color)]';
 
 const sidebarSecondaryMenuItemVariants = cva(sidebarSecondaryRowClasses, {
   variants: {
@@ -968,6 +975,12 @@ const SidebarSecondaryMenuItem = React.forwardRef<
             className
           ),
           'aria-current': selected ? 'page' : undefined,
+          onKeyDown: (e: React.KeyboardEvent<HTMLAnchorElement>) => {
+            if (e.key === ' ') {
+              e.preventDefault();
+              e.currentTarget.click();
+            }
+          },
           children: (
             <>
               {icon != null && (
@@ -1137,16 +1150,12 @@ const SidebarSecondaryCollapseTrigger = React.forwardRef<
 
     return (
       <li className="contents">
-        {expanded ? (
-          button
-        ) : (
-          <Tooltip>
-            <TooltipTrigger render={button} />
-            <TooltipContent side={dir === 'rtl' ? 'left' : 'right'}>
-              {expandTooltip}
-            </TooltipContent>
-          </Tooltip>
-        )}
+        <Tooltip disabled={expanded}>
+          <TooltipTrigger render={button} />
+          <TooltipContent side={dir === 'rtl' ? 'left' : 'right'}>
+            {expandTooltip}
+          </TooltipContent>
+        </Tooltip>
       </li>
     );
   }

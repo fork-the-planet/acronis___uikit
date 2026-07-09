@@ -66,9 +66,9 @@ describe('Resizable', () => {
     render(<Group />);
     const handle = screen.getByRole('separator');
     expect(handle).toHaveClass(
-      'hover:after:bg-[var(--ui-resizable-border-color-hover)]',
-      'active:after:bg-[var(--ui-resizable-border-color-active)]',
-      'focus-visible:ring-[var(--ui-focus-primary)]'
+      'hover:after:[border-inline-start-color:var(--ui-resizable-border-color-hover)]',
+      'active:after:[border-inline-start-color:var(--ui-resizable-border-color-active)]',
+      'focus-visible:after:[border-inline-start-color:var(--ui-resizable-border-color-active)]'
     );
   });
 });

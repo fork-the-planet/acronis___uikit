@@ -44,11 +44,15 @@ function ResizableHandle({ className, ...props }: ResizableHandleProps) {
         'relative flex w-[9px] items-center justify-center',
         'cursor-[var(--ui-resizable-cursor)] outline-none',
         // Centered 1px divider line (idle → semantic border, hover → hover token, drag → active token).
-        'after:absolute after:inset-y-0 after:start-1/2 after:-translate-x-1/2',
-        'after:w-[var(--ui-resizable-border-width)] after:bg-[var(--ui-border-on-surface-border)]',
-        'hover:after:bg-[var(--ui-resizable-border-color-hover)]',
-        'active:after:bg-[var(--ui-resizable-border-color-active)]',
-        'focus-visible:ring-[3px] focus-visible:ring-[var(--ui-focus-primary)]',
+        // Uses a CSS border (not width+background) so the browser pixel-snaps the line
+        // and it doesn't blur across device pixels when the handle lands at a fractional position.
+        'after:absolute after:inset-y-0 after:inset-x-0 after:mx-auto after:w-0',
+        'after:[border-inline-start-width:var(--ui-resizable-border-width)] after:border-solid after:[border-inline-start-color:var(--ui-border-on-surface-border)]',
+        'hover:after:[border-inline-start-color:var(--ui-resizable-border-color-hover)]',
+        'active:after:[border-inline-start-color:var(--ui-resizable-border-color-active)]',
+        // Focus ring: 3px box-shadow on the line itself so it auto-centers (Figma 4649:6686).
+        'focus-visible:after:[box-shadow:0_0_0_3px_var(--ui-focus-primary)] focus-visible:after:[border-inline-start-color:var(--ui-resizable-border-color-active)]',
+        'active:after:shadow-none',
         // orientation=horizontal = panels stacked → horizontal divider line.
         'aria-[orientation=horizontal]:h-[9px] aria-[orientation=horizontal]:w-full aria-[orientation=horizontal]:cursor-[ns-resize]',
         'aria-[orientation=horizontal]:after:inset-x-0 aria-[orientation=horizontal]:after:inset-y-auto aria-[orientation=horizontal]:after:start-auto aria-[orientation=horizontal]:after:top-1/2 aria-[orientation=horizontal]:after:h-[var(--ui-resizable-border-width)] aria-[orientation=horizontal]:after:w-full aria-[orientation=horizontal]:after:-translate-y-1/2 aria-[orientation=horizontal]:after:translate-x-0',

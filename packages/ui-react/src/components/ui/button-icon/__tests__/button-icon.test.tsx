@@ -113,4 +113,13 @@ describe('ButtonIcon', () => {
     expect(link).toHaveAttribute('href', '/home');
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
+
+  it('has cursor-pointer by default', () => {
+    render(
+      <ButtonIcon aria-label="Add">
+        <Icon />
+      </ButtonIcon>
+    );
+    expect(screen.getByRole('button', { name: 'Add' })).toHaveClass('cursor-pointer');
+  });
 });

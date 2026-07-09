@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 // disabled tokens (not opacity), and the focus state is a 3px `--ui-focus-primary`
 // ring flush to the edge (no offset), matching the Figma.
 const buttonIconVariants = cva(
-  'inline-flex size-[var(--ui-button-icon-global-container-height)] shrink-0 items-center justify-center rounded-[var(--ui-button-icon-global-container-border-radius)] transition-colors ' +
+  'inline-flex size-[var(--ui-button-icon-global-container-height)] shrink-0 items-center justify-center rounded-[var(--ui-button-icon-global-container-border-radius)] transition-colors cursor-pointer ' +
     'bg-[var(--ui-button-icon-global-container-color-idle)] text-[var(--ui-button-icon-global-icon-color-idle)] ' +
     'hover:bg-[var(--ui-button-icon-global-container-color-hover)] hover:text-[var(--ui-button-icon-global-icon-color-hover)] ' +
     'active:bg-[var(--ui-button-icon-global-container-color-active)] active:text-[var(--ui-button-icon-global-icon-color-active)] ' +

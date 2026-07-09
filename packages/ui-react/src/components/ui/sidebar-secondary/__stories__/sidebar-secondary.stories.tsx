@@ -13,6 +13,7 @@ import {
 
 import { ButtonIcon } from '../../button-icon';
 import { Tag } from '../../tag';
+import { Tooltip, TooltipTrigger, TooltipContent } from '../../tooltip';
 
 import {
   SidebarSecondary,
@@ -160,7 +161,9 @@ export const Default: Story = {
                 Antivirus
               </SidebarSecondaryMenuItem>
               <SidebarSecondaryMenuItem
-                href="#"
+                href="https://example.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 icon={<BoltIcon />}
                 extras={<SidebarSecondaryMenuItemExtras variant="externalLink" />}
               >
@@ -283,7 +286,9 @@ export const WithExtras: Story = {
                 Shortcut
               </SidebarSecondaryMenuItem>
               <SidebarSecondaryMenuItem
-                href="#"
+                href="https://example.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 icon={<BoltIcon />}
                 extras={<SidebarSecondaryMenuItemExtras variant="externalLink" />}
               >
@@ -302,7 +307,9 @@ export const WithExtras: Story = {
                 With tag
               </SidebarSecondaryMenuItem>
               <SidebarSecondaryMenuItem
-                href="#"
+                href="https://example.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 icon={<LayoutGridIcon />}
                 extras={
                   <SidebarSecondaryMenuItemExtras
@@ -433,9 +440,16 @@ export const SectionActionsAndRollup: Story = {
           <SidebarSecondarySection expandable>
             <SidebarSecondarySectionLabel
               actions={
-                <ButtonIcon aria-label="Add dashboard">
-                  <PlusIcon />
-                </ButtonIcon>
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <ButtonIcon aria-label="Create dashboard">
+                        <PlusIcon />
+                      </ButtonIcon>
+                    }
+                  />
+                  <TooltipContent>Create dashboard</TooltipContent>
+                </Tooltip>
               }
             >
               Dashboards
@@ -462,8 +476,28 @@ export const SectionActionsAndRollup: Story = {
               Operations
             </SidebarSecondarySectionLabel>
             <SidebarSecondaryMenu>
-              <SidebarSecondaryMenuItem href="#">Alerts</SidebarSecondaryMenuItem>
-              <SidebarSecondaryMenuItem href="#">Activities</SidebarSecondaryMenuItem>
+              <SidebarSecondaryMenuItem
+                href="#"
+                extras={
+                  <SidebarSecondaryMenuItemExtras
+                    variant="tag"
+                    tag={<Tag variant="neutral" size="sm">12</Tag>}
+                  />
+                }
+              >
+                Alerts
+              </SidebarSecondaryMenuItem>
+              <SidebarSecondaryMenuItem
+                href="#"
+                extras={
+                  <SidebarSecondaryMenuItemExtras
+                    variant="tag"
+                    tag={<Tag variant="neutral" size="sm">10</Tag>}
+                  />
+                }
+              >
+                Activities
+              </SidebarSecondaryMenuItem>
             </SidebarSecondaryMenu>
           </SidebarSecondarySection>
           <SidebarSecondarySection>
