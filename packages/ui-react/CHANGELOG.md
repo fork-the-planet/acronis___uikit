@@ -1,5 +1,113 @@
 # @acronis-platform/ui-react
 
+## 0.55.0
+
+### Minor Changes
+
+- [#505](https://github.com/acronis/uikit/pull/505) [`7433791`](https://github.com/acronis/uikit/commit/743379150993bf055e55175dda05bc9420276a41) Thanks [@marta-sampedro](https://github.com/marta-sampedro)! - Add `FilterSearch`: a composable toolbar layout for data tables (search + filters + tenant switcher + action buttons). Designed to complement the existing `DataTableToolbar` — use `FilterSearch` as a standalone toolbar above any data table, or `DataTableToolbar` when working within the `DataTable` composition. Also fixes `InputSearch` to apply `className` to the outer container so width-sizing (`className="w-56"`) works correctly.
+
+- [#512](https://github.com/acronis/uikit/pull/512) [`3e68b28`](https://github.com/acronis/uikit/commit/3e68b28392a7735fbe54cde75207031b9dd076f2) Thanks [@marta-sampedro](https://github.com/marta-sampedro)! - feat: add `PortalContainerProvider` for shadow-DOM MFE portal redirection (PLTFRM-91950)
+
+  New exports: `PortalContainerProvider`, `usePortalContainer`.
+
+  Wrap a subtree in `<PortalContainerProvider container={element}>` and every
+  portaling component (`Popover`, `DropdownMenu`, `Tooltip`, `Dialog`, `Sheet`,
+  `InputSelect`/`Select`, `Combobox`, `Toaster`) will mount its popup inside the
+  given container instead of `document.body`. An explicit `portalContainer` prop
+  on an individual component still takes precedence.
+
+  This is the recommended pattern for rendering `@acronis-platform/ui-react`
+  inside a shadow-DOM MFE: adopt the library's CSS onto the shadow root and wrap
+  the React tree in `PortalContainerProvider` pointing at a `<div>` inside the
+  shadow root. Portaled popups will then render inside the shadow boundary, fully
+  styled, with zero global style leakage.
+
+- [#506](https://github.com/acronis/uikit/pull/506) [`caae190`](https://github.com/acronis/uikit/commit/caae190a0622d4d21101c81b29279e472c507c86) Thanks [@madjorr](https://github.com/madjorr)! - Add `logo` and `collapsedLogo` props to `SidebarPrimaryHeader` so consumers can render distinct graphics per rail state (e.g. a full brand lockup when expanded vs. a monogram when collapsed) instead of resizing or hiding a single node via CSS. `children` still works unchanged when only one representation is needed.
+
+- [#501](https://github.com/acronis/uikit/pull/501) [`d9e5d4e`](https://github.com/acronis/uikit/commit/d9e5d4eb9184dd61b3e9812f0a111b68c04342e2) Thanks [@marta-sampedro](https://github.com/marta-sampedro)! - SidebarSecondary: resizable sidebar, auto breadcrumb, Resizable handle redesign
+
+  **Resizable sidebar (Figma 4449:21298):**
+  - New `resizable` prop enables a draggable edge on the right border
+  - Drag to resize between 256–512px; drag past 128px threshold to collapse
+  - Click edge to collapse/expand; double-click to reset to 256px default
+  - Width persists across collapse/expand cycles
+
+  **Collapsed breadcrumb auto-wiring:**
+  - `SidebarSecondaryCollapsedBreadcrumb` is now rendered automatically by the
+    root — consumers no longer need to place it manually
+  - Labels auto-derived from `SidebarSecondaryHeader` and selected
+    `SidebarSecondaryMenuItem` via context
+  - Removed from the public API (internal implementation detail)
+
+  **Resizable handle redesign (Figma 4649:6681):**
+  - Remove grab-bar pill (`withHandle` prop dropped)
+  - Idle border via `--ui-border-on-surface-border`, highlights on hover/active
+  - 9px hit area (1px line + 4px padding per side)
+
+  **i18n — no hardcoded English in published components:**
+  - New `resizeAriaLabel`, `resizeTooltipExpanded`, `resizeTooltipCollapsed` props
+    on `SidebarSecondary` (default to English)
+  - New `expandTooltip` prop on `SidebarSecondaryCollapseTrigger` (default `'Expand'`)
+  - New `extras` prop on `SidebarSecondaryCollapseTrigger` (trailing slot for shortcut hints, etc.)
+  - New "Localized resize labels (es)" Storybook story demonstrates usage
+
+  **Storybook:**
+  - Interactive controls wired to Default story
+  - `resizable` prop exposed in argTypes; `width`/`onWidthChange` hidden
+
+### Patch Changes
+
+- [#494](https://github.com/acronis/uikit/pull/494) [`b783b3d`](https://github.com/acronis/uikit/commit/b783b3dd53a8bfa021daef9d4ec1c1d2b7a4525e) Thanks [@marta-sampedro](https://github.com/marta-sampedro)! - Apply font-smoothing reset (`-webkit-font-smoothing: antialiased`,
+  `-moz-osx-font-smoothing: grayscale`) to all elements via `@layer base`.
+
+- [#495](https://github.com/acronis/uikit/pull/495) [`9f20cfa`](https://github.com/acronis/uikit/commit/9f20cfaad86243df2e83ed25b195d8dc8bce6cf5) Thanks [@marta-sampedro](https://github.com/marta-sampedro)! - Replace physical CSS properties with logical equivalents for RTL support across
+  avatar, breadcrumb, chip, data-table, dropdown-menu, input-date-picker,
+  input-select, input-text, resizable, sidebar-primary, sidebar-secondary, switch,
+  table, tabs, toast, and widget-placeholder components. Layouts now render
+  correctly in both LTR and RTL directions.
+
+  Add `unicode-bidi: plaintext` to truncated label spans in sidebar-primary and
+  sidebar-secondary so text-overflow ellipsis clips from the correct end regardless
+  of layout direction.
+
+  Add overflow tooltip to sidebar-secondary menu items, section labels, and
+  collapse trigger — the tooltip shows the full label only when the text is
+  actually clipped (matching the existing sidebar-primary behaviour).
+
+  Ensure sidebar-secondary section labels truncate with ellipsis instead of
+  wrapping to multiple lines.
+
+- [#510](https://github.com/acronis/uikit/pull/510) [`6ce0de7`](https://github.com/acronis/uikit/commit/6ce0de79d4ee1e915a9324f487ab2d0f2f0d681c) Thanks [@marta-sampedro](https://github.com/marta-sampedro)! - Fix double border when SidebarSecondary is used with resizable, and fix RTL text direction in sidebar labels.
+  - **SidebarSecondary**: remove the `after:` divider from the resize edge; the sidebar's own `border-e` now changes color via `:has()` on hover/active/focus of the resize handle, eliminating the double border.
+  - **SidebarPrimary / SidebarSecondary**: remove `unicode-bidi:plaintext` from menu-item, section-label, header, and collapse-trigger labels so text direction follows the document's RTL/LTR setting correctly.
+
+- [#506](https://github.com/acronis/uikit/pull/506) [`4d82705`](https://github.com/acronis/uikit/commit/4d827051ba97d9744d33b70038ff7c6c73e6de2d) Thanks [@madjorr](https://github.com/madjorr)! - Fix `SidebarPrimaryMenuItem` and `SidebarPrimaryCollapseTrigger` not hiding their `extras` slot in collapsed/rail mode when passed a raw node instead of `SidebarPrimaryMenuItemExtras` — the collapse-aware hiding now lives in the parent, so it applies regardless of what's passed as `extras`.
+
+- [#506](https://github.com/acronis/uikit/pull/506) [`4a39149`](https://github.com/acronis/uikit/commit/4a39149a88e34826ffab0c9b6ccc3a15fad8b33c) Thanks [@madjorr](https://github.com/madjorr)! - Fix `SidebarPrimary` menu labels overflowing instead of truncating with an ellipsis when expanded. Two causes: the label `<span>` was missing `min-w-0` (a prior refactor dropped it, breaking `truncate` inside the flex row), and `SidebarPrimaryContent`'s `ScrollArea` sizes its content to `min-width: fit-content` internally (needed for horizontal-overflow detection), which let any wide row grow past the rail and defeat truncation entirely — now overridden for this vertical-only scroll area.
+
+  `SidebarPrimaryMenuItem` and `SidebarPrimaryCollapseTrigger` labels also show a tooltip with the full text when — and only when — the label is actually clipped; hovering the icon or `extras` never opens it.
+
+- [#506](https://github.com/acronis/uikit/pull/506) [`8d83296`](https://github.com/acronis/uikit/commit/8d83296ca1dcc415f221b6ca4633610dbb8b1a2f) Thanks [@madjorr](https://github.com/madjorr)! - Fix `SidebarPrimary` layout drift from Figma: the first `SidebarPrimarySection` no longer gets an extra top padding/divider (only the last-section-style bottom padding, matching Figma), `SidebarPrimaryFooter` no longer double-pads its rows on top of each item's own padding, and `SidebarPrimaryCollapseTrigger`'s icon now rotates 180° between expanded and collapsed rail states.
+
+  Also fixes `SidebarPrimaryMenuItem` and `SidebarPrimaryCollapseTrigger` rendering their trailing affordance nested inside the label's truncating span instead of as a flex sibling, which cramped the shortcut/tag/external-link extras against the label text. Both now take an explicit `extras` prop (a `SidebarPrimaryMenuItemExtras` element) rendered alongside the label. Also adds Figma Code Connect for the `Section` and `MenuItem` sub-components.
+
+  **Migration:** if you were passing `SidebarPrimaryMenuItemExtras` (or a raw shortcut/tag node) as a second child alongside the label — commonly with the label wrapped in `<span style={{ flex: 1 }}>...</span>` to push the extras to the row's edge — move it to the new `extras` prop and drop the manual flex wrapper:
+
+  ```diff
+  -<SidebarPrimaryMenuItem icon={<CircleHelpIcon />}>
+  -  <span style={{ flex: 1 }}>Auth layout demo</span>
+  -  <SidebarPrimaryMenuItemExtras variant="shortcut" shortcut="⌘H" />
+  -</SidebarPrimaryMenuItem>
+  +<SidebarPrimaryMenuItem
+  +  icon={<CircleHelpIcon />}
+  +  extras={<SidebarPrimaryMenuItemExtras variant="shortcut" shortcut="⌘H" />}
+  +>
+  +  Auth layout demo
+  +</SidebarPrimaryMenuItem>
+  ```
+
+  The same applies to `SidebarPrimaryCollapseTrigger`. Without this change the extras render inline right after the label instead of right-aligned, since the label+extras wrapper is intentionally not a flex container.
+
 ## 0.54.0
 
 ### Minor Changes
