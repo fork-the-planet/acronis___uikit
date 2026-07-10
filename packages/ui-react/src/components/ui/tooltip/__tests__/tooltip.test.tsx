@@ -121,4 +121,27 @@ describe('Tooltip', () => {
     );
     expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });
+
+  it('TooltipProvider defaults delay to 300ms', async () => {
+    const user = userEvent.setup();
+    render(
+      <TooltipProvider>
+        <Example />
+      </TooltipProvider>
+    );
+    await user.hover(screen.getByRole('button', { name: 'Hover me' }));
+    expect(screen.queryByText('Helpful hint')).not.toBeInTheDocument();
+    expect(await screen.findByText('Helpful hint')).toBeInTheDocument();
+  });
+
+  it('TooltipProvider delay can be overridden', async () => {
+    const user = userEvent.setup();
+    render(
+      <TooltipProvider delay={0}>
+        <Example />
+      </TooltipProvider>
+    );
+    await user.hover(screen.getByRole('button', { name: 'Hover me' }));
+    expect(await screen.findByText('Helpful hint')).toBeInTheDocument();
+  });
 });

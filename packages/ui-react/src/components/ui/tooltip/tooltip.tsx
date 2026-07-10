@@ -10,7 +10,9 @@ import { usePortalContainer } from '@/lib/portal-container';
 // 48–256px width). No arrow — matching the Figma design. Wrap the whole app (or
 // a region) in `TooltipProvider` to share open/close delays across tooltips.
 
-const TooltipProvider = TooltipPrimitive.Provider;
+function TooltipProvider(props: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
+  return <TooltipPrimitive.Provider delay={300} {...props} />;
+}
 
 const Tooltip = TooltipPrimitive.Root;
 

@@ -522,4 +522,96 @@ describe('Resize', () => {
     const nav = screen.getByRole('navigation');
     expect(nav.style.width).toBe('');
   });
+
+  it('resize edge has 17px hit area', () => {
+    render(<Panel />);
+    const edge = screen.getByRole('separator', { name: /resize sidebar/i });
+    expect(edge).toHaveClass('w-[17px]');
+  });
+
+  it('Space key toggles expanded state on resize edge', async () => {
+    const onChange = vi.fn();
+    render(<Panel resizable onExpandedChange={onChange} />);
+    const edge = screen.getByRole('separator', { name: /resize sidebar/i });
+    edge.focus();
+    await userEvent.keyboard(' ');
+    expect(onChange).toHaveBeenCalledWith(false);
+  });
+
+  it('ArrowRight expands when sidebar is collapsed', async () => {
+    const onChange = vi.fn();
+    render(<Panel resizable expanded={false} onExpandedChange={onChange} />);
+    const edge = screen.getByRole('separator', { name: /resize sidebar/i });
+    edge.focus();
+    await userEvent.keyboard('{ArrowRight}');
+    expect(onChange).toHaveBeenCalledWith(true);
+  });
+});
+
+describe('SidebarSecondary — cursor styles', () => {
+  it('menu items have cursor-pointer', () => {
+    render(<Panel />);
+    const link = screen.getByRole('link', { name: 'Dashboard' });
+    expect(link).toHaveClass('cursor-pointer');
+  });
+
+  it('expandable section labels have cursor-pointer', () => {
+    render(
+      <SidebarSecondary>
+        <SidebarSecondaryContent>
+          <SidebarSecondarySection expandable>
+            <SidebarSecondarySectionLabel>Config</SidebarSecondarySectionLabel>
+            <SidebarSecondaryMenu>
+              <SidebarSecondaryMenuItem href="/p">Policies</SidebarSecondaryMenuItem>
+            </SidebarSecondaryMenu>
+          </SidebarSecondarySection>
+        </SidebarSecondaryContent>
+      </SidebarSecondary>
+    );
+    const trigger = screen.getByRole('button', { name: /Config/ });
+    expect(trigger).toHaveClass('cursor-pointer');
+  });
+});
+
+describe('SidebarSecondary — Space key on anchor items', () => {
+  it('Space activates a focused menu item anchor', async () => {
+    const onClick = vi.fn();
+    render(
+      <SidebarSecondary>
+        <SidebarSecondaryMenu>
+          <SidebarSecondaryMenuItem href="/test" onClick={onClick}>
+            Test item
+          </SidebarSecondaryMenuItem>
+        </SidebarSecondaryMenu>
+      </SidebarSecondary>
+    );
+    const link = screen.getByRole('link', { name: 'Test item' });
+    link.focus();
+    await userEvent.keyboard(' ');
+    expect(onClick).toHaveBeenCalled();
+  });
+});
+
+describe('SidebarSecondary — CollapseTrigger focus retention', () => {
+  it('focus stays on collapse trigger after toggling expanded state', async () => {
+    render(
+      <SidebarSecondary defaultExpanded>
+        <SidebarSecondaryFooter>
+          <SidebarSecondaryMenu>
+            <SidebarSecondaryCollapseTrigger>
+              Collapse menu
+            </SidebarSecondaryCollapseTrigger>
+          </SidebarSecondaryMenu>
+        </SidebarSecondaryFooter>
+      </SidebarSecondary>
+    );
+    const trigger = screen.getByRole('button', { name: 'Collapse menu' });
+    trigger.focus();
+    expect(document.activeElement).toBe(trigger);
+    await userEvent.click(trigger);
+    await waitFor(() => {
+      const btn = screen.getByRole('button', { name: 'Collapse menu' });
+      expect(document.activeElement).toBe(btn);
+    });
+  });
 });
