@@ -127,7 +127,11 @@ export function parseTableUrlState(
           if (separator === -1) return null;
           const id = pair.slice(0, separator);
           if (!id) return null;
-          return { id, value: decodeURIComponent(pair.slice(separator + 1)) };
+          try {
+            return { id, value: decodeURIComponent(pair.slice(separator + 1)) };
+          } catch {
+            return null;
+          }
         })
         .filter((entry): entry is TableColumnFilterState => entry !== null)
     : [];

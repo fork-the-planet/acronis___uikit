@@ -51,6 +51,10 @@ describe('parse/serialize', () => {
   it('reads defaults from an empty search', () => {
     expect(parseTableUrlState('')).toEqual(emptyState);
   });
+
+  it('drops a malformed percent-encoded filter value instead of throwing', () => {
+    expect(parseTableUrlState('tbl_filter=status%3A%')).toEqual(emptyState);
+  });
 });
 
 describe('useTableUrlState', () => {
