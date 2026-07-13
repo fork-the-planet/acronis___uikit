@@ -147,7 +147,9 @@ grep -rn "<component>" packages/tokens-pd/css --include="*.css" -i
 - If **component-specific** tokens are missing entirely, they belong upstream
   in `@acronis-platform/design-tokens` (owned by the design team — we never
   edit `tiers/*.json`). **Do not hand-author hex values** in the component.
-  Escalate to the design team; once they ship the update, rebuild `tokens-pd`.
+  Escalate to the design team; once they ship the update in Figma, run
+  `/sync-tokens` (or `/figma-to-design-tokens`) to pull it into `tiers/*.json`,
+  then rebuild `tokens-pd`.
 
 ### Hard gate — tokens-pd resolution (mandatory)
 
@@ -156,9 +158,9 @@ convert it to its `--ui-*` form and confirm it exists in tokens-pd:
 
 ```bash
 for name in <list-of-figma-variable-names>; do
-  token="--ui-$(echo "$name" | sed 's|^component/||; s|_global/|global-|g' \
+  token="--ui-$(echo "$name" | sed -E 's|^components?/||; s|_global/|global-|g' \
     | tr '/' '-' | sed -E 's/([a-z0-9])([A-Z])/\1-\2/g' | tr '[:upper:]' '[:lower:]')"
-  grep -rqF "$token" packages/tokens-pd/css/ && echo "OK  $token" || echo "MISS $token"
+  grep -rqF -- "$token" packages/tokens-pd/css/ && echo "OK  $token" || echo "MISS $token"
 done
 ```
 
@@ -167,8 +169,9 @@ done
 - **Do NOT proceed to Phase 3.**
 - **Do NOT fall back to the Figma resolved value.**
 - Report the missing token(s) to the user. The token must be added by
-  the **design team** in `design-tokens` (we never edit `tiers/*.json`).
-  Once they ship the update, we rebuild `tokens-pd` and re-run the gate.
+  the **design team** in Figma (we never edit `tiers/*.json`).
+  Once they ship the update, run `/sync-tokens` to pull it into
+  `tiers/*.json`, rebuild `tokens-pd`, and re-run the gate.
 - The skill resumes only after the missing tokens exist in `tokens-pd`.
 
 > ⛔ **No fallback rule.** If a design variable has no matching `--ui-*`
@@ -176,6 +179,10 @@ done
 > `design-tokens`) — **never** hardcode the Figma value in the component.
 > `tokens-pd` is the single source of truth; we can rebuild it but never
 > author the upstream JSON.
+>
+> Rebuilding `tokens-pd` alone won't pick up a new Figma variable — it only
+> reads what's already in `tiers/*.json`. Run `/sync-tokens` first to sync
+> Figma → `tiers/*.json`, then rebuild.
 
 Wire **each interaction state to its own token** (`hover:` → `*-hover`,
 `disabled:` → `*-disabled`) even when the idle value happens to match — brand
