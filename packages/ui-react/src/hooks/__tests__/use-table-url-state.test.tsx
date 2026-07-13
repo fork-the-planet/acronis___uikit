@@ -55,6 +55,16 @@ describe('parse/serialize', () => {
   it('drops a malformed percent-encoded filter value instead of throwing', () => {
     expect(parseTableUrlState('tbl_filter=status%3A%')).toEqual(emptyState);
   });
+
+  it('dedupes a duplicate sort id, keeping the last occurrence', () => {
+    expect(parseTableUrlState('tbl_sort=name:asc,name:desc').sorting).toEqual([
+      { id: 'name', desc: true },
+    ]);
+  });
+
+  it('drops a sort entry with a malformed (extra-colon) direction', () => {
+    expect(parseTableUrlState('tbl_sort=name:desc:extra').sorting).toEqual([]);
+  });
 });
 
 describe('useTableUrlState', () => {

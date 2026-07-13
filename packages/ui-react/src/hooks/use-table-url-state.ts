@@ -104,19 +104,20 @@ export function parseTableUrlState(
     Number.isFinite(rawSize) && rawSize >= 1 ? Math.floor(rawSize) : defaultPageSize;
 
   const sortParam = params.get(keys.sort);
-  const sorting: TableSortingState[] = sortParam
-    ? sortParam
-        .split(',')
-        .map((pair) => {
-          const separator = pair.indexOf(':');
-          if (separator === -1) return null;
-          const id = pair.slice(0, separator);
-          const dir = pair.slice(separator + 1);
-          if (!id) return null;
-          return { id, desc: dir === 'desc' };
-        })
-        .filter((entry): entry is TableSortingState => entry !== null)
-    : [];
+  const sortingById = new Map<string, TableSortingState>();
+  if (sortParam) {
+    for (const pair of sortParam.split(',')) {
+      const separator = pair.indexOf(':');
+      if (separator === -1) continue;
+      const id = pair.slice(0, separator);
+      const dir = pair.slice(separator + 1);
+      if (!id || (dir !== 'asc' && dir !== 'desc')) continue;
+      // Last occurrence wins on a duplicate id — matches URLSearchParams'
+      // own semantics for a repeated key.
+      sortingById.set(id, { id, desc: dir === 'desc' });
+    }
+  }
+  const sorting: TableSortingState[] = Array.from(sortingById.values());
 
   const filterParam = params.get(keys.filter);
   const columnFilters: TableColumnFilterState[] = filterParam
