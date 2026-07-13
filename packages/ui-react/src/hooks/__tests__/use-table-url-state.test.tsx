@@ -81,6 +81,20 @@ describe('useTableUrlState', () => {
     expect(result.current.state.sorting).toEqual([{ id: 'size', desc: false }]);
   });
 
+  it('two setters called synchronously in the same handler both survive', () => {
+    // Mirrors table-full-demo.stories.tsx's handleFiltersChange, which calls
+    // setColumnFilters then setPagination back-to-back in one event handler.
+    const { result } = renderHook(() => useTableUrlState());
+    act(() => {
+      result.current.setColumnFilters([{ id: 'status', value: 'active' }]);
+      result.current.setPagination((old) => ({ ...old, pageIndex: 0 }));
+    });
+    expect(result.current.state.columnFilters).toEqual([
+      { id: 'status', value: 'active' },
+    ]);
+    expect(window.location.search).toContain('tbl_filter=status%3Aactive');
+  });
+
   it('re-reads state on popstate (browser back/forward)', () => {
     const { result } = renderHook(() => useTableUrlState());
     window.history.replaceState(null, '', '/?tbl_page=5');

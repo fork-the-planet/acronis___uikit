@@ -229,6 +229,10 @@ export function useTableUrlState(
 
   const commit = React.useCallback(
     (next: TableUrlState) => {
+      // Refresh the ref here, not just in the render body — two setters
+      // called synchronously in the same handler (before React re-renders)
+      // must see each other's updates, not the pre-batch snapshot.
+      stateRef.current = next;
       setState(next);
       if (typeof window === 'undefined') return;
       const query = serializeTableUrlState(next, window.location.search, {
