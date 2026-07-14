@@ -16,6 +16,7 @@ SidebarPrimary, SidebarSecondary: fix several UX bugs and unify the two componen
 - Truncated-label tooltips on `SidebarPrimaryMenuItem`, `SidebarSecondaryMenuItem`, `SidebarSecondarySectionLabel`, and both `CollapseTrigger`s now open to the side (right in LTR, left in RTL) instead of on top, and are anchored to the full row instead of the shrinking label span — so they align flush with the sidebar's edge instead of drifting inward when a row also has `extras`
 - Collapsed/rail-mode icon-only rows now always show their label as a tooltip on hover — previously the tooltip trigger was the `sr-only` label itself, which can never receive a real hover
 - `SidebarPrimaryMenuItem` (an anchor) now activates on Space in addition to Enter, matching native button behavior and `SidebarSecondaryMenuItem`
+- `SidebarPrimaryMenuItem`'s required-`icon` union now rejects `icon={undefined}` without `noIcon` — previously it typechecked (since `React.ReactNode` already includes `undefined`) and silently rendered an icon-less row
 
 **Added:**
 

@@ -330,8 +330,7 @@ const RENDER: Record<string, RenderHint> = {
     // where the auto-generated zero-arg render doesn't reflect real usage —
     // `icon` is required on every MenuItem, and the CollapseTrigger's rotating
     // icon / collapsed-tooltip wiring needs real context to demonstrate. VR is
-    // covered by the hand-written stories (Default / Collapsed / FullDemo /
-    // …).
+    // covered by the hand-written `FullDemo` story.
     skip: true,
   },
   'sidebar-secondary': {

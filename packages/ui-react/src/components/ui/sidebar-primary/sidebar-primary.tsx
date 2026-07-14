@@ -5,6 +5,7 @@ import { SquareArrowUpRightIcon } from '@acronis-platform/icons-react/stroke-mon
 import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
+import { useDocDir } from '@/lib/use-doc-dir';
 
 import { ScrollArea } from '../scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../tooltip';
@@ -37,15 +38,6 @@ interface SidebarPrimaryContextValue {
 
 const SidebarPrimaryContext =
   React.createContext<SidebarPrimaryContextValue | null>(null);
-
-/** Document direction — SSR-safe (defaults to 'ltr', syncs after mount). */
-function useDocDir(): 'ltr' | 'rtl' {
-  const [dir, setDir] = React.useState<'ltr' | 'rtl'>('ltr');
-  React.useEffect(() => {
-    setDir(document.documentElement.dir === 'rtl' ? 'rtl' : 'ltr');
-  }, []);
-  return dir;
-}
 
 function useSidebarPrimaryContext(): SidebarPrimaryContextValue {
   // Default to expanded so parts render standalone (e.g. in isolation tests /
@@ -382,7 +374,11 @@ interface SidebarPrimaryMenuItemBaseProps
 // rare escape hatch for a consumer that truly has no icon for a row.
 export type SidebarPrimaryMenuItemProps = SidebarPrimaryMenuItemBaseProps &
   (
-    | { /** Leading 16px icon (from `@acronis-platform/icons-react`). */ icon: React.ReactNode; noIcon?: never }
+    | {
+        /** Leading 16px icon (from `@acronis-platform/icons-react`). */
+        icon: Exclude<React.ReactNode, undefined>;
+        noIcon?: never;
+      }
     | { icon?: undefined; /** Explicit opt-out for the rare row with no icon. */ noIcon: true }
   );
 

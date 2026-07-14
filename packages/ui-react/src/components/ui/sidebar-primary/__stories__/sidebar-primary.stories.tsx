@@ -183,7 +183,7 @@ function Shell({
 //     `SidebarPrimaryContent` scrolls internally while the header and footer
 //     (`shrink-0` flex siblings) stay pinned.
 export const FullDemo: Story = {
-  name: 'Full demo — the Figma "Acronis Cyber Platform" screen',
+  name: 'Full Demo - All Features',
   render: function FullDemoStory() {
     return (
       <Shell height={560}>

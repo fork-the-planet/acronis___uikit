@@ -9,20 +9,12 @@ import {
 import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
+import { useDocDir } from '@/lib/use-doc-dir';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-
-/** Document direction — SSR-safe (defaults to 'ltr', syncs after mount). */
-function useDocDir(): 'ltr' | 'rtl' {
-  const [dir, setDir] = React.useState<'ltr' | 'rtl'>('ltr');
-  React.useEffect(() => {
-    setDir(document.documentElement.dir === 'rtl' ? 'rtl' : 'ltr');
-  }, []);
-  return dir;
-}
 
 /**
  * Tracks whether `ref`'s element is clipping its own content (`scrollWidth >
