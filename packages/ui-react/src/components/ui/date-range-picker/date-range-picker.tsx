@@ -30,7 +30,7 @@ function DateField({
   label: string;
   text: string;
   onTextChange: (text: string) => void;
-  onParsedChange: (date: Date) => void;
+  onParsedChange: (date: Date | undefined) => void;
 }) {
   return (
     <InputText
@@ -40,8 +40,16 @@ function DateField({
       onChange={(event) => {
         const next = event.target.value;
         onTextChange(next);
+
+        if (next.trim() === '') {
+          onParsedChange(undefined);
+          return;
+        }
+
         const parsed = parseDate(next);
-        if (parsed) onParsedChange(parsed);
+        if (parsed) {
+          onParsedChange(parsed);
+        }
       }}
     />
   );
@@ -148,10 +156,17 @@ const DateRangePicker = React.forwardRef<
 
     // Feed the calendar a normalized range so a typed inverted range still
     // highlights the correct band (the editable fields keep the raw typed text).
+    // react-day-picker's `DateRange` requires `from`, so a to-only draft (end
+    // typed before start) is fed as a single selected day at `to` — otherwise
+    // `selected` would be `undefined` and the next calendar click would start a
+    // fresh range instead of completing this one, discarding the typed end date.
     const normalizedDraft = normalizeRange(draft);
-    const selectedRange: RdpDateRange | undefined = normalizedDraft.from
-      ? { from: normalizedDraft.from, to: normalizedDraft.to }
-      : undefined;
+    let selectedRange: RdpDateRange | undefined;
+    if (normalizedDraft.from) {
+      selectedRange = { from: normalizedDraft.from, to: normalizedDraft.to };
+    } else if (normalizedDraft.to) {
+      selectedRange = { from: normalizedDraft.to, to: normalizedDraft.to };
+    }
 
     const handleSelect = (range: RdpDateRange | undefined) => {
       const next = { from: range?.from, to: range?.to };
