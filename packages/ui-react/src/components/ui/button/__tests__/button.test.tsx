@@ -17,6 +17,13 @@ describe('Button', () => {
     expect(button.querySelector('svg')).toBeNull();
   });
 
+  it('renders an empty ai variant with no injected content', () => {
+    render(<Button variant="ai" aria-label="Ask AI" />);
+    const button = screen.getByRole('button', { name: 'Ask AI' });
+    expect(button).toBeEmptyDOMElement();
+    expect(button.querySelector('svg')).toBeNull();
+  });
+
   it('renders a consumer-provided icon inside the ai variant', () => {
     render(
       <Button variant="ai">
