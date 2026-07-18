@@ -28,7 +28,7 @@ catalog:
   # "t is not a function" at runtime in SSR consumers (apps/docs prerender).
   # @vitejs/plugin-react is correspondingly held at 5.x (6.x requires
   # vite ^8). Revisit once rolldown's CJS interop is fixed.
-  vite: 6.4.2
+  vite: 6.4.3
   vitest: 4.1.7
 
   # Cross-workspace runtime deps. Versions intentionally match
@@ -54,7 +54,7 @@ catalog:
   # JSON-schema validation — shared by the data packages
   # (packages/design-assets, packages/design-tokens), which validate their manifests
   # against ajv-compiled schemas. No runtime deps; ajv is dev-only.
-  ajv: 8.17.1
+  ajv: 8.18.0
   ajv-cli: 5.0.0
   ajv-formats: 3.0.1
 
